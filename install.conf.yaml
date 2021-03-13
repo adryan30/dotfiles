@@ -6,13 +6,26 @@
     ~/.bashrc: bashrc
     ~/.bash_logout: bash_logout
     ~/.gitconfig: gitconfig
+    ~/.config/pavucontrol.ini: pavucontrol.ini
+    ~/.config/picom.conf: picom.conf
     ~/.vim/vimrc:
         path: vim/vimrc
         create: true
     ~/.zshrc: zshrc
     ~/.xinitrc: xinitrc
-    ~/.config/i3:
-        path: config/i3/
+    ~/.config/i3: config/i3/
+    ~/.config/polybar: config/polybar
+    ~/.config/flameshot: config/flameshot
+    ~/.config/kitty: config/kitty
+    ~/.config/Mailspring/config.json: 
+        path: config/Mailspring/config.json
         create: true
+    ~/.config/mopidy: config/mopidy
+    ~/.config/mpd: config/mpd
+    ~/.config/nitrogen: config/nitrogen
+    ~/.config/polybar: config/polybar
+    ~/.config/rofi: config/rofi
+    ~/.config/wal: config/wal
+  
 
 
