@@ -6,4 +6,4 @@
 # window-padding-x = 2
 
 font-size = 16
-theme = tokyonight-day
+theme = light:tokyonight-day,dark:tokyonight-storm
