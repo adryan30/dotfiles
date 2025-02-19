@@ -7,6 +7,7 @@ packages:
     - 'git-delta'
     - 'antidote'
     - 'zoxide'
+    - 'tmux'
     casks:
     - 'aerospace'
     - 'arc'
