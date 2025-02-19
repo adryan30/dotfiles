@@ -6,6 +6,7 @@ packages:
     - 'bitwarden-cli'
     - 'git-delta'
     - 'antidote'
+    - 'zoxide'
     casks:
     - 'aerospace'
     - 'arc'
