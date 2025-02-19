@@ -12,5 +12,8 @@ email = adryan1990@gmail.com
     navigate = true
 
 [merge]
-    conflictstyle = zdiff3
+  conflictstyle = zdiff3
+
+[diff]
+  tool = delta
 
