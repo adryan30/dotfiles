@@ -10,3 +10,4 @@ packages:
     casks:
     - 'aerospace'
     - 'arc'
+    - 'adoptium'
