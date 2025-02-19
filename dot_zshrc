@@ -6,7 +6,7 @@ antidote load
 
 export PATH=$PATH:$HOME/.volta/bin
 export PATH=$PATH:$HOME/.cargo/bin
-export PATH=$PATH:$HOME/Library/Application Support/Herd/bin/
+export PATH=$PATH:$HOME/Library/Application\ Support/Herd/bin/
 
 export EDITOR=nvim
 export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/config/php/84/"
