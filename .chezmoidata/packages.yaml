@@ -1,0 +1,9 @@
+packages:
+  darwin:
+    brews:
+    - 'neovim'
+    - 'starship'
+    - 'bitwarden-cli'
+    casks:
+    - 'aerospace'
+    - 'arc'
