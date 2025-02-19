@@ -4,6 +4,7 @@ packages:
     - 'neovim'
     - 'starship'
     - 'bitwarden-cli'
+    - 'git-delta'
     casks:
     - 'aerospace'
     - 'arc'
