@@ -1,17 +1,15 @@
-eval "$(starship init zsh)"
-
-export EDITOR=nvim
+source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+antidote load
 
 export PATH=$PATH:$HOME/.volta/bin
 export PATH=$PATH:$HOME/.cargo/bin
+export PATH="/Users/potato/Library/Application Support/Herd/bin/":$PATH
+
+export EDITOR=nvim
+export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/config/php/84/"
 
 alias ls="eza -la"
 alias lg="lazygit"
 
+eval "$(starship init zsh)"
 
-# Herd injected PHP 8.4 configuration.
-export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/config/php/84/"
-
-
-# Herd injected PHP binary.
-export PATH="/Users/potato/Library/Application Support/Herd/bin/":$PATH
