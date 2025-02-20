@@ -8,7 +8,7 @@ packages:
     - 'antidote'
     - 'zoxide'
     - 'tmux'
-    - 'tailscale'
+    - 'azure-cli'
     casks:
     - 'aerospace'
     - 'arc'
