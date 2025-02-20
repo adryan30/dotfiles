@@ -13,3 +13,4 @@ packages:
     - 'aerospace'
     - 'arc'
     - 'temurin'
+    - 'jetbrains-toolbox'
