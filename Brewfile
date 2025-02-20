@@ -28,6 +28,7 @@ brew "tmux"
 brew "volta"
 brew "zoxide"
 brew "felixkratz/formulae/borders"
+brew "jq"
 
 cask "aerospace"
 cask "arc"
