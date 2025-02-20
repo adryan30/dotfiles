@@ -12,7 +12,7 @@ export HOMEBREW_NO_ENV_HINTS=TRUE
 export EDITOR=nvim
 export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/config/php/84/"
 
-alias ls="eza -la"
+alias ls="eza -l"
 alias lg="lazygit"
 alias bbic="brew update &&\
     brew bundle install --cleanup --file=~/.config/Brewfile --no-lock &&\
