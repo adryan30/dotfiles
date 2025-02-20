@@ -14,6 +14,9 @@ export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/
 
 alias ls="eza -la"
 alias lg="lazygit"
+alias bbic="brew update &&\
+    brew bundle install --cleanup --file=~/.config/Brewfile --no-lock &&\
+    brew upgrade"
 
 eval "$(starship init zsh)"
 
