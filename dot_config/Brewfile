@@ -36,6 +36,7 @@ brew "coreutils"
 brew "gawk"
 brew "glab"
 brew "nowplaying-cli"
+brew "fd"
 
 cask "aerospace"
 cask "arc"
