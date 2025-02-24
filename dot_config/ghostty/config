@@ -5,8 +5,8 @@
 # font-family = Iosevka
 # window-padding-x = 2
 
+font-family = JetBrainsMono Nerd Font Mono
 font-size = 16
 theme = light:tokyonight-day,dark:tokyonight-storm
-
 
 keybind = global:cmd+grave_accent=toggle_quick_terminal
