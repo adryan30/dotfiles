@@ -29,6 +29,7 @@ brew "volta"
 brew "zoxide"
 brew "felixkratz/formulae/borders"
 brew "jq"
+brew "kubectx"
 
 cask "aerospace"
 cask "arc"
