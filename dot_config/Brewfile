@@ -39,6 +39,7 @@ brew "nowplaying-cli"
 brew "fd"
 brew "lazydocker"
 brew "sshuttle"
+brew "openfortivpn"
 
 cask "aerospace"
 cask "arc"
