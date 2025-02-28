@@ -38,6 +38,7 @@ brew "glab"
 brew "nowplaying-cli"
 brew "fd"
 brew "lazydocker"
+brew "sshuttle"
 
 cask "aerospace"
 cask "arc"
