@@ -17,7 +17,7 @@ alias ls="eza -l"
 alias lg="lazygit"
 alias cd="z"
 alias bbic="brew update &&\
-    brew bundle install --cleanup --file=~/.config/Brewfile --no-lock &&\
+    brew bundle install --cleanup --file=~/.config/Brewfile &&\
     brew upgrade"
 
 eval "$(starship init zsh)"
