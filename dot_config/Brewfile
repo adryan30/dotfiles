@@ -41,6 +41,7 @@ brew "lazydocker"
 brew "sshuttle"
 brew "openfortivpn"
 brew "rclone"
+brew "postgresql@14"
 
 cask "aerospace"
 cask "arc"
