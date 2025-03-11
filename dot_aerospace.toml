@@ -108,7 +108,7 @@ esc = ['reload-config', 'mode main']
 r = [
   'flatten-workspace-tree',
   'mode main',
-  "exec-and-forget curl http://localhost:7776/widget/time/toggle",
+  "exec-and-forget curl http://localhost:7776/aerospace/spaces/refresh",
 ] # reset layout
 f = [
   'layout floating tiling',
