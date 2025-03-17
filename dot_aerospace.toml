@@ -105,11 +105,7 @@ alt-shift-semicolon = 'mode service'
 
 [mode.service.binding]
 esc = ['reload-config', 'mode main']
-r = [
-  'flatten-workspace-tree',
-  'mode main',
-  "exec-and-forget curl http://localhost:7776/aerospace/spaces/refresh",
-] # reset layout
+r = ['flatten-workspace-tree', 'mode main'] # reset layout
 f = [
   'layout floating tiling',
   'mode main',
