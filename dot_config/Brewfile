@@ -42,6 +42,7 @@ brew "sshuttle"
 brew "openfortivpn"
 brew "rclone"
 brew "postgresql@14"
+brew "ripgrep"
 
 cask "aerospace"
 cask "arc"
