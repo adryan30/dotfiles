@@ -44,6 +44,7 @@ brew "rclone"
 brew "postgresql@14"
 brew "ripgrep"
 brew "helm"
+brew "maven"
 
 cask "aerospace"
 cask "arc"
