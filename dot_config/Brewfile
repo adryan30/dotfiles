@@ -45,6 +45,7 @@ brew "postgresql@14"
 brew "ripgrep"
 brew "helm"
 brew "maven"
+brew "sketchybar"
 
 cask "aerospace"
 cask "arc"
