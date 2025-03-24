@@ -47,6 +47,7 @@ brew "helm"
 brew "maven"
 brew "sketchybar"
 brew "pam-reattach"
+brew "iterm2"
 
 cask "aerospace"
 cask "arc"
