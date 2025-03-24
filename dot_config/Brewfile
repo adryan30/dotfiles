@@ -46,6 +46,7 @@ brew "ripgrep"
 brew "helm"
 brew "maven"
 brew "sketchybar"
+brew "pam-reattach"
 
 cask "aerospace"
 cask "arc"
