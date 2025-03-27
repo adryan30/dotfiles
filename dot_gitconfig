@@ -17,3 +17,5 @@ email = adryan1990@gmail.com
 [diff]
   tool = delta
 
+[pull]
+	rebase = false
