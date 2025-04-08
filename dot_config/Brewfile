@@ -57,6 +57,7 @@ brew "kubeseal"
 brew "lua"
 brew "switchaudio-osx"
 brew "nowplaying-cli"
+brew "pipx"
 
 cask "aerospace"
 cask "arc"
