@@ -8,6 +8,7 @@ export PATH=$PATH:$HOME/.volta/bin
 export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:$HOME/Library/Application\ Support/Herd/bin/
 export PATH=$PATH:$HOME/.krew/bin
+export PATH=$PATH:$HOME/.local/bin
 export HOMEBREW_NO_ENV_HINTS=TRUE
 
 export EDITOR=nvim
