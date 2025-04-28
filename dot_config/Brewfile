@@ -58,6 +58,7 @@ brew "lua"
 brew "switchaudio-osx"
 brew "nowplaying-cli"
 brew "pipx"
+brew "bat"
 
 cask "aerospace"
 cask "arc"
