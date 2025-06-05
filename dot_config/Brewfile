@@ -60,6 +60,7 @@ brew "pipx"
 brew "bat"
 brew "fluxcd/tap/flux"
 brew "zellij"
+brew "sk"
 
 cask "aerospace"
 cask "arc"
