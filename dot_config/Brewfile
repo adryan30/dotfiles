@@ -59,6 +59,7 @@ brew "nowplaying-cli"
 brew "pipx"
 brew "bat"
 brew "fluxcd/tap/flux"
+brew "zellij"
 
 cask "aerospace"
 cask "arc"
