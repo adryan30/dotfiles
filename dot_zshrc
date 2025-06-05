@@ -16,6 +16,7 @@ export HOMEBREW_NO_ENV_HINTS=TRUE
 export EDITOR=nvim
 export HERD_PHP_84_INI_SCAN_DIR="/Users/potato/Library/Application Support/Herd/config/php/84/"
 export SDKMAN_DIR=$(brew --prefix sdkman-cli)/libexec
+export ZELLIJ_AUTO_ATTACH=true
 [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
 
 alias ls="eza -l"
