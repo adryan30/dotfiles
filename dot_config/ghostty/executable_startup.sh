@@ -3,6 +3,7 @@ SESSION_NAME="ghostty"
 
 # Check if the session already exists
 /opt/homebrew/bin/tmux has-session -t $SESSION_NAME 2>/dev/null
+/opt/homebrew/bin/zellij has
 
 if [ $? -eq 0 ]; then
   # If the session exists, reattach to it
