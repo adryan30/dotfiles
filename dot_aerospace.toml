@@ -34,9 +34,9 @@ preset = 'qwerty'
 inner.horizontal = 8
 inner.vertical = 8
 outer.left = 1
-outer.bottom = 2
+outer.bottom = 1
 outer.top = 32
-outer.right = 2
+outer.right = 1
 
 [mode.main.binding]
 
