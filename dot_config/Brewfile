@@ -61,6 +61,7 @@ brew "bat"
 brew "fluxcd/tap/flux"
 brew "zellij"
 brew "sk"
+brew "rust"
 
 cask "aerospace"
 cask "arc"
