@@ -26,5 +26,5 @@ alias cd="z"
 alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfile && brew upgrade"
 alias cze="chezmoi edit --apply"
 
-eval "$(zellij setup --generate-auto-start zsh)"
+#eval "$(zellij setup --generate-auto-start zsh)"
 eval "$(starship init zsh)"
