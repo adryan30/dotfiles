@@ -63,6 +63,7 @@ brew "zellij"
 brew "sk"
 brew "rust"
 brew "fish"
+brew "nushell"
 
 cask "aerospace"
 cask "arc"
