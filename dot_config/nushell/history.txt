@@ -1,0 +1,186 @@
+exit
+clear
+ls
+ls | order size
+ls 
+clear
+ls
+ls | sort-by size
+ls | sort-by size asc
+ls | sort-by size:asc
+ls | sort-by size
+ls | sort-by size --help
+ls | sort-by size | reverse
+rm index.ts
+clear
+nvim index.json
+nvim
+clear
+nvim
+clear
+ls
+vim
+clear
+exit
+ps
+clear
+eza
+exa
+ls
+clear
+:try
+explore
+clear
+explora
+explore
+clear
+ls
+cler
+claer
+clear
+nvim
+vim
+zh
+zsh
+exit
+/opt/homebrew/bin/nvim
+clear
+/opt/homebrew/bin/nvim
+clear
+nvim
+clear
+ls
+open .zshrc
+help commands | explore
+clear
+config nu
+clear
+config nu
+clear
+cd .config
+mkdir nushell
+clear
+cd nushell/
+clear
+open config nu
+clear
+config nu
+nvim config.nu
+vim config.nu
+clear
+config nu
+clear
+vim config.nu
+claer
+clear
+exit
+clear
+config nu | nu-highlight
+clear
+config nu
+$nu.config-path
+vim $nu.config-path
+cd $nu.config-path
+cd `~/Library/Application Support/nushell/`
+ls
+clear
+vim config.nu
+vim env.nu
+clear
+exit
+cd `~/Library/Application Support/nushell/`
+vim env.nu
+cleare
+exit
+clear
+ls
+cd .config/nushell/
+clear
+config nu
+clear
+brew
+clear
+which brew
+clear
+vim config.nu
+clear
+echo $env.EDITOR
+$env
+clear
+source config.nu
+$nu.config-path           
+exit
+0c8cb0a6-281f-44cc-8743-f474997c0ca0
+$nu.config-path           
+vim .zprofile
+clear
+exit
+$nu.config-path           
+source .zprofile
+export
+clear
+ls
+vim .zprofile
+clear
+ls
+clear
+config nu
+cd `~/Library/Application Support/nushell/`
+ls
+vim config.nu
+vim env.nu
+clear
+cd
+clear
+cd .config
+cd nushell/
+ls
+cd
+clear
+mv ~/Library/Application\ Support/nushell ~/.config/<\n>
+mv `~/Library/Application Support/nushell/` ~/.config
+cd .config
+rm -rf nushell/
+clear
+cd ..
+clear
+config nu
+cd .config/nushell/
+ls
+clear
+$env.config
+clear
+vim config.nu
+clear
+exit
+nvim 
+vim ~/.config/nushell/config.nu
+clear
+exit
+nvim
+clear
+nvim .zshrc
+nvim
+clear
+nvim
+clear
+ls
+clear
+cze
+clear
+nvim ~/.config/nushell/config.nu
+nvim
+nvim ~/.config/nushell/config.nu
+clear
+config nu
+exit
+config nu
+clear
+$env.config | table
+config nu
+clear
+exit
+clear
+oh-my-posh init nu
+clear
+exit
