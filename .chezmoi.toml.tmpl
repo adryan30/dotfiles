@@ -1,0 +1,12 @@
+{{- $key := promptStringOnce . "key" "SSH Private Key" }}
+encryption = "age"
+
+[git]
+autoCommit = true
+autoPush = true
+
+[age]
+command = "age"
+identity = {{ $key | quote }}
+symmetric = true
+
