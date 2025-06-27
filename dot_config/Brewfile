@@ -66,6 +66,7 @@ brew "fish"
 brew "nushell"
 brew "gitleaks"
 brew "arkade"
+brew "aws-cli"
 
 cask "aerospace"
 cask "arc"
