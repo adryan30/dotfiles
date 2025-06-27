@@ -65,6 +65,7 @@ brew "rust"
 brew "fish"
 brew "nushell"
 brew "gitleaks"
+brew "arkade"
 
 cask "aerospace"
 cask "arc"
