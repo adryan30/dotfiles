@@ -67,6 +67,7 @@ brew "nushell"
 brew "gitleaks"
 brew "arkade"
 brew "awscli"
+brew "k9s"
 
 cask "aerospace"
 cask "arc"
