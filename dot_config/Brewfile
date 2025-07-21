@@ -68,6 +68,7 @@ brew "gitleaks"
 brew "arkade"
 brew "awscli"
 brew "k9s"
+brew "grishka/grishka/neardrop"
 
 cask "aerospace"
 cask "arc"
