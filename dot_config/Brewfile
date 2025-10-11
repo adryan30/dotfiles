@@ -67,6 +67,7 @@ brew "gitleaks"
 brew "awscli"
 brew "k9s"
 brew "hashicorp/tap/terraform"
+brew "oci-cli"
 
 cask "aerospace"
 cask "arc"
