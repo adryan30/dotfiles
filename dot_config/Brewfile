@@ -61,7 +61,6 @@ brew "k9s"
 brew "hashicorp/tap/terraform"
 brew "oci-cli"
 brew "go"
-brew "steam"
 
 cask "aerospace"
 cask "bitwarden"
@@ -90,3 +89,5 @@ cask "microsoft-remote-desktop"
 cask "freelens"
 cask "displaylink"
 cask "notunes"
+cask "steam"
+
