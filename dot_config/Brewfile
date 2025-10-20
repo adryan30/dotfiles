@@ -61,6 +61,7 @@ brew "k9s"
 brew "hashicorp/tap/terraform"
 brew "oci-cli"
 brew "go"
+brew "rclone"
 
 cask "aerospace"
 cask "bitwarden"
