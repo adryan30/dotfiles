@@ -63,6 +63,7 @@ brew "oci-cli"
 brew "go"
 brew "rclone"
 
+
 cask "aerospace"
 cask "bitwarden"
 cask "discord"
@@ -91,4 +92,5 @@ cask "freelens"
 cask "displaylink"
 cask "notunes"
 cask "steam"
+cask "iterm2"
 
