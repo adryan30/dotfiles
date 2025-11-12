@@ -62,6 +62,7 @@ brew "hashicorp/tap/terraform"
 brew "oci-cli"
 brew "go"
 brew "rclone"
+brew "istioctl"
 
 
 cask "aerospace"
