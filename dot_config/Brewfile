@@ -63,6 +63,7 @@ brew "oci-cli"
 brew "go"
 brew "rclone"
 brew "istioctl"
+brew "gemini-cli"
 
 cask "aerospace"
 cask "bitwarden"
