@@ -34,6 +34,7 @@ alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfi
 
 
 {{ if eq (env "SHELL") "/bin/zsh" }}
+eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
 {{ end }}
 
