@@ -8,7 +8,7 @@ export PATH=$PATH:$HOME/.krew/bin
 export PATH=$PATH:$HOME/.volta/bin
 {{ if eq .chezmoi.os "linux" }}
 export PATH=$PATH:/snap/bin
-export PATH=$PATH:$HOME/.linuxbrew/bin
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 {{ end }}
 
 export EDITOR=nvim
