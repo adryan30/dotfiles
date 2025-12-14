@@ -8,6 +8,7 @@ export PATH=$PATH:$HOME/.krew/bin
 export PATH=$PATH:$HOME/.volta/bin
 {{ if eq .chezmoi.os "linux" }}
 export PATH=$PATH:/snap/bin
+export PATH=$PATH:$HOME/.linuxbrew/bin
 {{ end }}
 
 export EDITOR=nvim
@@ -27,11 +28,10 @@ export SDKMAN_DIR=$(brew --prefix sdkman-cli)/libexec
 export PNPM_HOME=$HOME/Library/pnpm
 export PATH=$PATH:$PNPM_HOME
 export PATH=$PATH:$HOME/go/bin
+{{ end }}
 
 alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfile && brew upgrade"
 [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
-{{ end }}
-
 
 {{ if eq (env "SHELL") "/bin/zsh" }}
 eval "$(zoxide init zsh)"
