@@ -6,6 +6,9 @@ export PATH=$PATH:$HOME/.local/bin
 export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:$HOME/.krew/bin
 export PATH=$PATH:$HOME/.volta/bin
+{{ if eq .chezmoi.os "linux" }}
+export PATH=$PATH:/snap/bin
+{{ end }}
 
 export EDITOR=nvim
 
