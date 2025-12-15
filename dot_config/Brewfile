@@ -8,7 +8,7 @@ tap "hashicorp/tap"
 tap "oven-sh/bun"
 
 # macOS Only
-{{ if eq chezmoi.platform "darwin" }}
+{{ if eq .chezmoi.os "darwin" }}
 tap "th-ch/youtube-music"
 
 brew "felixkratz/formulae/borders"
