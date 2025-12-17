@@ -37,8 +37,8 @@ alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfi
 {{ if eq (env "SHELL") "/bin/zsh" }}
 eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
+eval "$(mise activate zsh)"
 {{ end }}
-
 
 {{ if eq .chezmoi.os "linux" }}
 # >>> conda initialize >>>
