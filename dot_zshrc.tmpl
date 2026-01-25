@@ -6,6 +6,10 @@ export PATH=$PATH:$HOME/.local/bin
 export PATH=$PATH:$HOME/.cargo/bin
 export PATH=$PATH:$HOME/.krew/bin
 export PATH=$PATH:$HOME/.volta/bin
+{{ if eq .chezmoi.os "linux" }}
+export PATH=$PATH:/snap/bin
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
+{{ end }}
 
 export EDITOR=nvim
 
@@ -14,24 +18,57 @@ alias lg="lazygit"
 alias cd="z"
 alias cze="chezmoi edit --apply"
 
-{{ if eq .chezmoi.os "darwin" }}
 source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
 antidote load
 
+export SDKMAN_DIR=$(brew --prefix sdkman-cli)/libexec
+
+{{ if eq .chezmoi.os "darwin" }}
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_ENV_HINTS=TRUE
-export SDKMAN_DIR=$(brew --prefix sdkman-cli)/libexec
 export PNPM_HOME=$HOME/Library/pnpm
 export PATH=$PATH:$PNPM_HOME
 export PATH=$PATH:$HOME/go/bin
+{{ end }}
 
 alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfile && brew upgrade"
 [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
-{{ end }}
-
 
 {{ if eq (env "SHELL") "/bin/zsh" }}
+eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
+eval "$(mise activate zsh)"
+{{ end }}
+
+{{ if eq .chezmoi.os "linux" }}
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/potato/miniforge3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/potato/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/potato/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/potato/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'mamba shell init' !!
+export MAMBA_EXE='/home/potato/miniforge3/bin/mamba';
+export MAMBA_ROOT_PREFIX='/home/potato/miniforge3';
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__mamba_setup"
+else
+    alias mamba="$MAMBA_EXE"  # Fallback on help from mamba activate
+fi
+unset __mamba_setup
+# <<< mamba initialize <<<
 {{ end }}
 
 # Added by Antigravity

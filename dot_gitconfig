@@ -18,4 +18,10 @@ email = adryan1990@gmail.com
   tool = delta
 
 [pull]
-	rebase = false
+        rebase = false
+[credential "https://github.com"]
+        helper =
+        helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+        helper =
+        helper = !/usr/bin/gh auth git-credential
