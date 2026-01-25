@@ -33,3 +33,8 @@ alias bbic="brew update && brew bundle install --cleanup --file=~/.config/Brewfi
 {{ if eq (env "SHELL") "/bin/zsh" }}
 eval "$(starship init zsh)"
 {{ end }}
+
+# Added by Antigravity
+export PATH="/Users/potato/.antigravity/antigravity/bin:$PATH"
+export PATH="$HOME/Miniforge3/bin:$PATH"
+
