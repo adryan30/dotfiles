@@ -1,0 +1,15 @@
+# macOS-only
+{{- if ne .chezmoi.os "darwin" }}
+dot_config/Brewfile.tmpl
+dot_zsh_plugins.txt
+{{- end }}
+
+# Linux / CachyOS desktop — not for Mac
+{{- if ne .chezmoi.os "linux" }}
+dot_config/fish
+dot_config/ghostty
+dot_config/alacritty
+dot_config/niri
+dot_config/noctalia
+dot_config/dotfiles/packages.linux.txt
+{{- end }}

@@ -1,0 +1,4 @@
+# Fisher plugin list (optional). Highlights + autosuggestions are built into fish.
+# Install fisher: paru -S fisher
+# Then: fisher update
+jorgebucaran/fisher
