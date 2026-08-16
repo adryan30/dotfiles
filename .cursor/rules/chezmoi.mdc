@@ -1,0 +1,17 @@
+---
+description: >-
+  Chezmoi-managed home/dotfiles: edit sourceDir only, never managed $HOME
+  targets in place. Triggers for ~/.config, ~/.local, zshrc, XCompose, niri,
+  noctalia, pipewire, EasyEffects, ~/Developer/dotfiles, chezmoi commands.
+alwaysApply: false
+---
+
+# Chezmoi-managed files
+
+Before creating or editing anything under `$HOME` that looks like config/dotfiles (or anything in `~/Developer/dotfiles`):
+
+1. Read and follow the **chezmoi** skill: `~/.agents/skills/chezmoi/SKILL.md`
+2. Edit `chezmoi source-path` (or `chezmoi edit` / `chezmoi add`) — not managed targets in place
+3. `chezmoi apply` after source changes (dry-run first when unsure)
+
+Repo detail: `~/Developer/dotfiles/docs/adr/0001-chezmoi-source-is-canonical.md`

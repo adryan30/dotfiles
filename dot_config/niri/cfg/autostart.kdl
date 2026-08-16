@@ -1,0 +1,6 @@
+// ────────────── Startup Applications ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Miscellaneous#spawn-sh-at-startup
+
+    spawn-at-startup "noctalia"
+    // Float Bitwarden/Zen extension popups after they set their real title
+    spawn-at-startup "/home/potato/.local/bin/niri-dynamic-float"

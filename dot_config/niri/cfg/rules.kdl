@@ -1,0 +1,74 @@
+    window-rule {
+        geometry-corner-radius 20 // Set every window radius to 20
+        clip-to-geometry true
+    }
+
+    window-rule {
+        background-effect {
+          blur true
+          xray false
+        }
+    }
+
+    // Floating Noctalia settings window.
+    window-rule {
+        match app-id="dev.noctalia.Noctalia"
+        open-floating true
+        default-column-width { fixed 1080; }
+        default-window-height { fixed 920; }
+    }
+
+    // Soundboard — quick floating clip picker (Mod+A).
+    window-rule {
+        match app-id="dev.potato.Soundboard"
+        open-floating true
+        default-floating-position x=32 y=32 relative-to="top-right"
+        default-column-width { fixed 420; }
+        default-window-height { fixed 620; }
+    }
+
+    // if you use steam you will probably like these
+    window-rule {
+        match app-id="steam"
+        exclude title=r#"^[Ss]team$"#
+        open-floating true
+    }
+
+    window-rule {
+       match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+       default-floating-position x=10 y=10 relative-to="bottom-right"
+       open-focused false
+    }
+
+    window-rule {
+      match app-id=r#"zen|firefox"# title="^Picture-in-Picture$"
+      open-floating true
+      default-floating-position x=32 y=32 relative-to="bottom-right"
+      default-column-width { fixed 720; }
+      default-window-height { fixed 405; }
+    }
+
+    // Best-effort only: Zen/Firefox set extension titles *after* open, so
+    // open-floating usually misses Bitwarden. The real fix is
+    // ~/.local/bin/niri-dynamic-float (spawned at startup).
+    window-rule {
+      match app-id=r#"zen|firefox"# title=r#"^Extension:"#
+      open-floating true
+      default-floating-position x=32 y=32 relative-to="top-right"
+      default-column-width { fixed 420; }
+      default-window-height { fixed 560; }
+    }
+
+
+    layer-rule {
+        match namespace="^noctalia-wallpaper"
+        place-within-backdrop true
+    }
+
+    layer-rule {
+        match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+        background-effect {
+          xray false
+          // blur false
+        }
+    }

@@ -1,0 +1,362 @@
+#!/usr/bin/env python3
+"""Soundboard GUI — plays clips into the PipeWire 'soundboard' sink (→ Voice Chat / Discord)."""
+
+from __future__ import annotations
+
+import json
+import os
+import signal
+import subprocess
+import sys
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
+
+CLIPS_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "soundboard" / "clips"
+CONFIG_PATH = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "soundboard" / "gui.json"
+TARGET_SINK = "soundboard"
+AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".oga", ".flac", ".m4a", ".aac", ".opus", ".wma", ".aiff", ".aif"}
+
+
+def _clamp(value: float, lo: float = 0.0, hi: float = 1.5) -> float:
+    return max(lo, min(hi, value))
+
+
+class SoundboardApp(Adw.Application):
+    def __init__(self) -> None:
+        super().__init__(
+            application_id="dev.potato.Soundboard",
+            flags=Gio.ApplicationFlags.FLAGS_NONE,
+        )
+        self._players: list[subprocess.Popen] = []
+        self._monitor = True
+        self._discord_vol = 1.0
+        self._headset_vol = 0.7
+        self.window: Adw.ApplicationWindow | None = None
+        self.list_box: Gtk.ListBox | None = None
+        self.status: Gtk.Label | None = None
+        self._discord_label: Gtk.Label | None = None
+        self._headset_label: Gtk.Label | None = None
+        self._headset_scale: Gtk.Scale | None = None
+        self._load_settings()
+
+    def do_activate(self) -> None:
+        if self.window is None:
+            self.window = self._build_window()
+        self.window.present()
+        self.refresh_clips()
+
+    def _load_settings(self) -> None:
+        try:
+            data = json.loads(CONFIG_PATH.read_text())
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            return
+        self._monitor = bool(data.get("monitor", self._monitor))
+        self._discord_vol = _clamp(float(data.get("discord_volume", self._discord_vol)))
+        self._headset_vol = _clamp(float(data.get("headset_volume", self._headset_vol)))
+
+    def _save_settings(self) -> None:
+        CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        CONFIG_PATH.write_text(
+            json.dumps(
+                {
+                    "monitor": self._monitor,
+                    "discord_volume": round(self._discord_vol, 3),
+                    "headset_volume": round(self._headset_vol, 3),
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+
+    def _build_window(self) -> Adw.ApplicationWindow:
+        win = Adw.ApplicationWindow(application=self, title="Soundboard")
+        win.set_default_size(420, 620)
+
+        toolbar = Adw.ToolbarView()
+        header = Adw.HeaderBar()
+        header.set_title_widget(Adw.WindowTitle(title="Soundboard", subtitle="→ Discord via Voice Chat"))
+
+        refresh_btn = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text="Refresh clips")
+        refresh_btn.connect("clicked", lambda *_: self.refresh_clips())
+        header.pack_start(refresh_btn)
+
+        folder_btn = Gtk.Button(icon_name="folder-symbolic", tooltip_text="Open clips folder")
+        folder_btn.connect("clicked", lambda *_: self.open_clips_folder())
+        header.pack_start(folder_btn)
+
+        stop_btn = Gtk.Button(icon_name="media-playback-stop-symbolic", tooltip_text="Stop all")
+        stop_btn.add_css_class("destructive-action")
+        stop_btn.connect("clicked", lambda *_: self.stop_all())
+        header.pack_end(stop_btn)
+
+        toolbar.add_top_bar(header)
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
+        # Options row
+        opts = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        opts.set_margin_top(12)
+        opts.set_margin_bottom(4)
+        opts.set_margin_start(16)
+        opts.set_margin_end(16)
+
+        monitor = Gtk.CheckButton(label="Also play on headset")
+        monitor.set_active(self._monitor)
+        monitor.connect("toggled", self._on_monitor_toggled)
+        opts.append(monitor)
+
+        open_lbl = Gtk.LinkButton(uri=CLIPS_DIR.as_uri(), label="Clips folder")
+        open_lbl.set_halign(Gtk.Align.END)
+        open_lbl.set_hexpand(True)
+        opts.append(open_lbl)
+        outer.append(opts)
+
+        # Volume controls
+        vol_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vol_box.set_margin_start(16)
+        vol_box.set_margin_end(16)
+        vol_box.set_margin_top(4)
+        vol_box.set_margin_bottom(8)
+
+        discord_row = self._make_volume_row(
+            "Discord",
+            self._discord_vol,
+            self._on_discord_volume,
+        )
+        self._discord_label = discord_row[1]
+        vol_box.append(discord_row[0])
+
+        headset_row = self._make_volume_row(
+            "Headset",
+            self._headset_vol,
+            self._on_headset_volume,
+        )
+        self._headset_label = headset_row[1]
+        self._headset_scale = headset_row[2]
+        self._headset_scale.set_sensitive(self._monitor)
+        vol_box.append(headset_row[0])
+        outer.append(vol_box)
+
+        scrolled = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        self.list_box.add_css_class("boxed-list")
+        self.list_box.set_margin_start(12)
+        self.list_box.set_margin_end(12)
+        self.list_box.set_margin_bottom(8)
+        scrolled.set_child(self.list_box)
+        outer.append(scrolled)
+
+        self.status = Gtk.Label(label="Ready", xalign=0)
+        self.status.add_css_class("dim-label")
+        self.status.set_margin_start(16)
+        self.status.set_margin_end(16)
+        self.status.set_margin_bottom(12)
+        outer.append(self.status)
+
+        toolbar.set_content(outer)
+        win.set_content(toolbar)
+        return win
+
+    def _make_volume_row(
+        self,
+        title: str,
+        initial: float,
+        on_change,
+    ) -> tuple[Gtk.Box, Gtk.Label, Gtk.Scale]:
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+
+        name = Gtk.Label(label=title, xalign=0)
+        name.set_width_chars(8)
+        row.append(name)
+
+        scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0.0, 1.5, 0.01)
+        scale.set_value(initial)
+        scale.set_hexpand(True)
+        scale.set_draw_value(False)
+        scale.set_digits(2)
+        scale.add_mark(1.0, Gtk.PositionType.BOTTOM, None)
+        scale.connect("value-changed", on_change)
+        row.append(scale)
+
+        pct = Gtk.Label(label=self._fmt_vol(initial), xalign=1)
+        pct.set_width_chars(5)
+        pct.add_css_class("dim-label")
+        row.append(pct)
+        return row, pct, scale
+
+    @staticmethod
+    def _fmt_vol(value: float) -> str:
+        return f"{int(round(value * 100))}%"
+
+    def _on_monitor_toggled(self, btn: Gtk.CheckButton) -> None:
+        self._monitor = btn.get_active()
+        if self._headset_scale is not None:
+            self._headset_scale.set_sensitive(self._monitor)
+        self._save_settings()
+
+    def _on_discord_volume(self, scale: Gtk.Scale) -> None:
+        self._discord_vol = _clamp(scale.get_value())
+        if self._discord_label is not None:
+            self._discord_label.set_text(self._fmt_vol(self._discord_vol))
+        self._save_settings()
+
+    def _on_headset_volume(self, scale: Gtk.Scale) -> None:
+        self._headset_vol = _clamp(scale.get_value())
+        if self._headset_label is not None:
+            self._headset_label.set_text(self._fmt_vol(self._headset_vol))
+        self._save_settings()
+
+    def set_status(self, text: str) -> None:
+        if self.status:
+            self.status.set_text(text)
+
+    def refresh_clips(self) -> None:
+        CLIPS_DIR.mkdir(parents=True, exist_ok=True)
+        assert self.list_box is not None
+        while True:
+            row = self.list_box.get_row_at_index(0)
+            if row is None:
+                break
+            self.list_box.remove(row)
+
+        files = sorted(
+            (p for p in CLIPS_DIR.iterdir() if p.is_file() and p.suffix.lower() in AUDIO_EXTS),
+            key=lambda p: p.name.lower(),
+        )
+
+        if not files:
+            empty = Adw.ActionRow(
+                title="No clips yet",
+                subtitle=f"Drop audio files into {CLIPS_DIR}",
+            )
+            empty.set_sensitive(False)
+            self.list_box.append(empty)
+            self.set_status("Add clips, then hit Refresh")
+            return
+
+        for path in files:
+            row = Adw.ActionRow(title=path.stem, subtitle=path.name)
+            row.set_activatable(True)
+
+            play = Gtk.Button(icon_name="media-playback-start-symbolic", valign=Gtk.Align.CENTER)
+            play.add_css_class("suggested-action")
+            play.add_css_class("circular")
+            play.set_tooltip_text("Play")
+            play.connect("clicked", lambda _b, p=path: self.play_clip(p))
+            row.add_suffix(play)
+            row.connect("activated", lambda _r, p=path: self.play_clip(p))
+            self.list_box.append(row)
+
+        self.set_status(
+            f"{len(files)} clip(s) · Discord {self._fmt_vol(self._discord_vol)}"
+            + (f" · Headset {self._fmt_vol(self._headset_vol)}" if self._monitor else "")
+        )
+
+    def open_clips_folder(self) -> None:
+        CLIPS_DIR.mkdir(parents=True, exist_ok=True)
+        Gio.AppInfo.launch_default_for_uri(CLIPS_DIR.as_uri(), None)
+
+    def _reap_players(self) -> None:
+        alive = []
+        for proc in self._players:
+            if proc.poll() is None:
+                alive.append(proc)
+        self._players = alive
+
+    def play_clip(self, path: Path) -> None:
+        self._reap_players()
+        if not self._sink_exists(TARGET_SINK):
+            self.set_status("Soundboard sink missing — is PipeWire voice-chat config loaded?")
+            self._toast_error("Soundboard sink not found")
+            return
+
+        jobs: list[tuple[str, float]] = [(TARGET_SINK, self._discord_vol)]
+        if self._monitor:
+            default_sink = self._default_sink()
+            if default_sink and default_sink != TARGET_SINK:
+                jobs.append((default_sink, self._headset_vol))
+
+        for target, volume in jobs:
+            cmd = [
+                "pw-play",
+                "--target",
+                target,
+                "--volume",
+                f"{volume:.3f}",
+                str(path),
+            ]
+            try:
+                proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+                self._players.append(proc)
+            except FileNotFoundError:
+                self.set_status("pw-play not found")
+                return
+            except OSError as exc:
+                self.set_status(f"Play failed: {exc}")
+                return
+
+        where = "Discord + headset" if self._monitor else "Discord only"
+        self.set_status(
+            f"Playing “{path.stem}” → {where} "
+            f"(D {self._fmt_vol(self._discord_vol)}"
+            + (f", H {self._fmt_vol(self._headset_vol)}" if self._monitor else "")
+            + ")"
+        )
+
+    def stop_all(self) -> None:
+        for proc in self._players:
+            if proc.poll() is None:
+                try:
+                    os.killpg(proc.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                try:
+                    proc.terminate()
+                except ProcessLookupError:
+                    pass
+        self._players.clear()
+        self.set_status("Stopped")
+
+    @staticmethod
+    def _default_sink() -> str | None:
+        try:
+            out = subprocess.check_output(["pactl", "get-default-sink"], text=True).strip()
+            return out or None
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            return None
+
+    @staticmethod
+    def _sink_exists(name: str) -> bool:
+        try:
+            out = subprocess.check_output(["pactl", "list", "short", "sinks"], text=True)
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            return False
+        return any(line.split()[1] == name for line in out.splitlines() if line.strip())
+
+    def _toast_error(self, message: str) -> None:
+        if not self.window:
+            return
+        print(message, file=sys.stderr)
+
+
+def main() -> int:
+    Adw.init()
+    app = SoundboardApp()
+    return app.run(sys.argv)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

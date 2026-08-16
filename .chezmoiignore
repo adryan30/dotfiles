@@ -1,0 +1,30 @@
+# Patterns match TARGET paths (what lands in $HOME), not source names.
+
+# macOS-only
+{{- if ne .chezmoi.os "darwin" }}
+.config/Brewfile
+.zsh_plugins.txt
+{{- end }}
+
+# Linux / CachyOS — never apply on macOS
+{{- if ne .chezmoi.os "linux" }}
+.XCompose
+.config/fish
+.config/ghostty
+.config/alacritty
+.config/niri
+.config/noctalia
+.config/dotfiles
+.config/environment.d
+.config/mimeapps.list
+.config/paru
+.config/flameshot
+.config/gtk-3.0
+.config/gtk-4.0
+.config/easyeffects
+.config/pipewire
+.config/wireplumber
+.config/soundboard
+.local/bin/niri-dynamic-float
+.local/bin/soundboard
+{{- end }}

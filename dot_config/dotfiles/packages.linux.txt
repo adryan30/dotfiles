@@ -1,0 +1,25 @@
+# CachyOS / Arch — install with:
+#   grep -vE '^\s*(#|$)' ~/.config/dotfiles/packages.linux.txt | paru -S --needed -
+
+age
+atuin
+bat
+chezmoi
+eza
+fd
+fish
+fisher
+fzf
+git-delta
+github-cli
+helm
+jq
+k9s
+kubectx
+lazydocker
+lazygit
+mise
+neovim
+ripgrep
+starship
+zoxide
