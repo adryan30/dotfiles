@@ -22,9 +22,15 @@
 .config/gtk-3.0
 .config/gtk-4.0
 .config/easyeffects
+.config/easyeffectsrc
+.config/qt6ct
 .config/pipewire
 .config/wireplumber
 .config/soundboard
+.config/xdg-desktop-portal
 .local/bin/niri-dynamic-float
 .local/bin/soundboard
+.local/bin/aur-overlay
+.config/systemd/user/aur-overlay-sync.service
+.config/systemd/user/aur-overlay-sync.timer
 {{- end }}

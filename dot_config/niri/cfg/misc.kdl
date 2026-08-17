@@ -9,6 +9,8 @@
         XDG_CURRENT_DESKTOP "niri"
         XDG_SESSION_TYPE "wayland"
         LC_CTYPE "pt_BR.UTF-8"
+        // libqalculate (Noctalia calc) uses LC_MONETARY as the default conversion target
+        LC_MONETARY "pt_BR.UTF-8"
     }
 
     cursor {

@@ -1,0 +1,9 @@
+[Unit]
+Description=Regenerate patched AUR overlay PKGBUILDs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/aur-overlay sync --yes --notify
+Nice=10

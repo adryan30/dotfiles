@@ -15,7 +15,7 @@ Operational companion to [ADR-0001](../adr/0001-chezmoi-source-is-canonical.md).
 - Change files under the sourceDir (or `chezmoi edit -- <target>`).
 - Preview: `chezmoi apply --dry-run --verbose`
 - Apply: `chezmoi apply`
-- Git: commit in the source repo when asked; `autoCommit` / `autoPush` are off.
+- Git: commit the sourceDir repo and push to origin after apply. The chezmoi skill owns this; source changes ship in the same turn as the edit.
 
 ## Ignore and OS split
 

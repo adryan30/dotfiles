@@ -12,16 +12,16 @@ inputDevice=alsa_input.usb-3142_fifine_Microphone-00.analog-stereo
 listenToMic=false
 listenToMicIncludesOutputEffects=false
 mostUsedPresets=mic
-plugins=rnnoise#0,equalizer#0,compressor#0
+plugins=rnnoise#0,gate#0,equalizer#0,compressor#0
 useDefaultInputDevice=false
-usedPresets=mic:34
+usedPresets=mic:40
 visiblePage=pluginsPage
 visiblePlugin=rnnoise#0
 
 [StreamOutputs]
 linkToVirtualSource=false
 mostUsedPresets=none
-outputDevice=bluez_output.64_68_76_5A_F8_F5.1
+outputDevice=alsa_output.pci-0000_03_00.1.hdmi-stereo
 plugins=
 useDefaultOutputDevice=true
 usedPresets=none:6

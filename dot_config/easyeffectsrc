@@ -1,0 +1,5 @@
+# KColorSchemeManager (not the db/easyeffectsrc pipeline file).
+# On niri + qt6ct this is required: "Default" auto-picks Breeze Light/Dark
+# and never reads Noctalia from kdeglobals.
+[UiSettings]
+ColorScheme=noctalia

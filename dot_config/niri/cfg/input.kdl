@@ -27,3 +27,10 @@ input {
     focus-follows-mouse // Automatically focus windows under the mouse pointer
     workspace-auto-back-and-forth // Enable workspace back & forth switching
 }
+
+gestures {
+    // Don't open the overview when the pointer hits a screen corner
+    hot-corners {
+        off
+    }
+}

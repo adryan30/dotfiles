@@ -1,0 +1,9 @@
+#!/bin/sh
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ else }}
+set -eu
+mkdir -p "${HOME}/.local/share/aur-overlay/pkgbuilds"
+systemctl --user daemon-reload
+systemctl --user enable --now aur-overlay-sync.timer
+{{ end }}

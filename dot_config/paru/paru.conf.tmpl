@@ -37,3 +37,11 @@ BottomUp
 #FileManager = vifm
 #MFlags = --skippgpcheck
 #Sudo = doas
+
+# Local patched AUR packages managed by `aur-overlay`.
+# Path repos skip paru's review step; `aur-overlay sync` regenerates PKGBUILDs
+# from the current AUR origin so `paru -Syu` sees version bumps.
+[aur-overlay]
+Path = {{ .chezmoi.homeDir }}/.local/share/aur-overlay/pkgbuilds
+Depth = 2
+GenerateSrcinfo

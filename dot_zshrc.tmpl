@@ -39,6 +39,9 @@ eval "$(mise activate zsh)"
 # CachyOS / Linux — keep stock distro zsh; daily driver is fish.
 source /usr/share/cachyos-zsh-config/cachyos-config.zsh
 
+# Docker rootless (docker-rootless package)
+export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+
 eval "$(atuin init zsh)"
 
 if command -v mise >/dev/null 2>&1; then

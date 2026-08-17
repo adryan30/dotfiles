@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily AUR overlay PKGBUILD sync
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=20m
+
+[Install]
+WantedBy=timers.target

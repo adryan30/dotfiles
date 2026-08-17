@@ -1,3 +1,5 @@
 [sie][RNNoise#0]
 enableVad=true
 modelName=
+release=150
+vadThres=55
