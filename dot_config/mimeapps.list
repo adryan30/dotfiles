@@ -11,6 +11,9 @@ application/x-extension-xhtml=zen.desktop
 application/x-extension-xht=zen.desktop
 x-scheme-handler/harbor=harbor-handler.desktop
 x-scheme-handler/hydralauncher=hydralauncher.desktop
+x-scheme-handler/discord=vesktop.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+x-scheme-handler/claude=com.anthropic.Claude.desktop
 
 [Added Associations]
 x-scheme-handler/http=zen.desktop;
