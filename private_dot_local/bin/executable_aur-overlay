@@ -37,6 +37,10 @@ package into paru's [aur-overlay] PKGBUILD repo. By default it
 provides/conflicts/replaces the origin. --alongside keeps the origin installed
 and installs the overlay next to it (only works if files do not overlap).
 Sync re-fetches each origin so the custom package tracks AUR updates.
+
+If OVERLAY_DIR/pkgbuild.sed exists it is applied to the generated PKGBUILD
+after every sync (useful for upstream lines that ignore the new pkgname,
+e.g. hardcoded compatibility-tool display names).
 EOF
 }
 
@@ -287,6 +291,10 @@ generate_one() {
   [[ -f "$odir/alongside" ]] && alongside=1
 
   footer_body "$origin" "$name" "$alongside" "${patches[@]}" >>"$dest/PKGBUILD"
+
+  if [[ -f "$odir/pkgbuild.sed" ]]; then
+    sed -i -f "$odir/pkgbuild.sed" "$dest/PKGBUILD"
+  fi
 
   (
     cd "$dest"

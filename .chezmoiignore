@@ -1,5 +1,10 @@
 # Patterns match TARGET paths (what lands in $HOME), not source names.
 
+# Runtime app state, not real config: EasyEffects rewrites usedPresets/
+# outputDevice here every session (usage counters, last active PipeWire
+# sink), so tracking it just fights the app. Don't re-add.
+.config/easyeffects/db/easyeffectsrc
+
 # macOS-only
 {{- if ne .chezmoi.os "darwin" }}
 .config/Brewfile
