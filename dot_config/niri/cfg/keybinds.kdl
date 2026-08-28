@@ -158,15 +158,27 @@ binds {
     Mod+M                               { maximize-window-to-edges; }
 
     // ─── Screenshots ───
-    // Print: region + annotate (flameshot). Ctrl+Print: whole monitor → clipboard.
-    // Alt+Print: focused window (niri; flameshot has no window mode on Wayland).
-    // Ctrl+Shift+1/2/3 kept as aliases.
-    Print                               hotkey-overlay-title="Screenshot Region: flameshot gui" { spawn-sh "flameshot gui -d 250 -c"; }
-    Ctrl+Print                          hotkey-overlay-title="Screenshot Screen: flameshot" { spawn-sh "flameshot screen -n 0 -d 250 -c"; }
+    // flameshot (Print/Ctrl+Print) is retired: on this multi-monitor niri
+    // session, niri's portal-facing screenshot D-Bus method (used by
+    // xdg-desktop-portal-gnome, the correct backend for niri) hard-errors
+    // with `outputs.len() == 1` for any output count != 1, which hangs
+    // flameshot until its 30s timeout. Replaced with portal-free captures:
+    // grim+slurp talk to niri's wlr-screencopy support directly.
+    // Print: region select (slurp) → annotate/copy (swappy), no portal.
+    // Ctrl+Print: whole focused screen → clipboard (niri native, no portal).
+    // Alt+Print: focused window (niri native, no portal).
+    // Shift+Print: niri's built-in interactive Screenshot UI (pick a
+    // window/output/region on screen; copies to clipboard, saves to disk
+    // per `screenshot-path` in misc.kdl — currently null, so clipboard-only).
+    // Ctrl+Shift+1/2/3/4 kept as aliases.
+    Print                               hotkey-overlay-title="Screenshot Region: grim+slurp+swappy" { spawn-sh "grim -g \"$(slurp)\" - | swappy -f -"; }
+    Ctrl+Print                          hotkey-overlay-title="Screenshot Screen: niri" { screenshot-screen; }
     Alt+Print                           hotkey-overlay-title="Screenshot Window: niri" { screenshot-window; }
-    CTRL+Shift+1                        hotkey-overlay-title="Screenshot Region: flameshot gui" { spawn-sh "flameshot gui -d 250 -c"; }
-    CTRL+Shift+2                        hotkey-overlay-title="Screenshot Screen: flameshot" { spawn-sh "flameshot screen -n 0 -d 250 -c"; }
+    Shift+Print                         hotkey-overlay-title="Screenshot UI: niri" { screenshot; }
+    CTRL+Shift+1                        hotkey-overlay-title="Screenshot Region: grim+slurp+swappy" { spawn-sh "grim -g \"$(slurp)\" - | swappy -f -"; }
+    CTRL+Shift+2                        hotkey-overlay-title="Screenshot Screen: niri" { screenshot-screen; }
     CTRL+Shift+3                        hotkey-overlay-title="Screenshot Window: niri" { screenshot-window; }
+    CTRL+Shift+4                        hotkey-overlay-title="Screenshot UI: niri" { screenshot; }
 
     // ─── Emergency Escape Key ───
     // Use this when a fullscreen app blocks your keybinds.
