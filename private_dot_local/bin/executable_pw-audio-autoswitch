@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+# Outputs (priority): Edifier BT → Edifier USB cable → GPU output for the
+# active context (TV over HDMI while gamescope-hdr is running, monitor over
+# DP otherwise — see GAMESCOPE_MARKER).
+# Input: Voice Chat → EasyEffects Source → Fifine USB mic.
+# Never uses Edifier headset mics (BT HFP or USB).
+set -euo pipefail
+
+BT_MAC="64_68_76_5A_F8_F5"
+BT_SINK="bluez_output.${BT_MAC}.1"
+CABLE_SINK_RE='^alsa_output\.usb-EDFIER_EDIFIER_W820NB'
+# The GPU's HDMI/DP audio codec only instantiates one port's sink at a time —
+# switching between monitor and TV means switching its ALSA card profile,
+# not just picking a different already-present sink (confirmed via
+# `pactl list cards`: 4 sinks under "pro-audio" use unstable pro-output-N
+# names, so we stick to the single-port profiles instead).
+GPU_CARD="alsa_card.pci-0000_03_00.1"
+GPU_MONITOR_SINK="alsa_output.pci-0000_03_00.1.hdmi-stereo"        # LG Ultrawide, DisplayPort
+GPU_MONITOR_PROFILE="output:hdmi-stereo"
+GPU_TV_SINK="alsa_output.pci-0000_03_00.1.hdmi-stereo-extra3"       # Beyond TV, HDMI
+GPU_TV_PROFILE="output:hdmi-stereo-extra3"
+GAMESCOPE_MARKER="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/gamescope-active"
+VOICE_CHAT_SRC="voice_chat"
+EE_SRC="easyeffects_source"
+USB_MIC_RE='^alsa_input\.usb-.*(fifine|3142)'
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/wireplumber/default-nodes"
+
+log() { printf '[pw-audio-autoswitch] %s\n' "$*"; }
+
+find_id_by_name() {
+  local want="$1"
+  pw-dump 2>/dev/null | python3 -c '
+import json, sys
+want = sys.argv[1]
+for obj in json.load(sys.stdin):
+    if obj.get("type") != "PipeWire:Interface:Node":
+        continue
+    props = (obj.get("info") or {}).get("props") or {}
+    if props.get("node.name") == want:
+        print(obj["id"])
+        break
+' "$want"
+}
+
+find_name_re() {
+  local re="$1" cls="$2"
+  pw-dump 2>/dev/null | python3 -c '
+import json, re, sys
+pat, cls = re.compile(sys.argv[1]), sys.argv[2]
+best = None
+for obj in json.load(sys.stdin):
+    if obj.get("type") != "PipeWire:Interface:Node":
+        continue
+    props = (obj.get("info") or {}).get("props") or {}
+    name, media = props.get("node.name") or "", props.get("media.class") or ""
+    if media == cls and pat.search(name):
+        prio = int(props.get("priority.session") or 0)
+        cand = (prio, name)
+        if best is None or cand > best:
+            best = cand
+if best:
+    print(best[1])
+' "$re" "$cls"
+}
+
+find_preferred_source() {
+  local name
+  for name in "$VOICE_CHAT_SRC" "$EE_SRC"; do
+    if [[ -n "$(find_id_by_name "$name" || true)" ]]; then
+      printf '%s\n' "$name"
+      return 0
+    fi
+  done
+  find_name_re "$USB_MIC_RE" 'Audio/Source' || true
+}
+
+# Which GPU output is preferred when no headset is connected. Pure lookup,
+# no side effects — used for preference-stack bookkeeping as well as here.
+current_gpu_sink() {
+  if [[ -f "$GAMESCOPE_MARKER" ]]; then
+    printf '%s\n' "$GPU_TV_SINK"
+  else
+    printf '%s\n' "$GPU_MONITOR_SINK"
+  fi
+}
+
+gpu_active_profile() {
+  pactl list cards 2>/dev/null | awk -v card="$GPU_CARD" '
+    $0 ~ ("Name: " card) { found=1 }
+    found && /Active Profile:/ { print $3; exit }
+  '
+}
+
+# Switch the GPU card to whichever single-port profile carries the wanted
+# sink (its HDMI/DP codec only exposes one port's sink node at a time). A
+# no-op when already active, so calling this on every policy pass is cheap.
+ensure_gpu_profile() {
+  local want="$1"
+  if [[ "$(gpu_active_profile)" != "$want" ]]; then
+    log "GPU card profile → ${want}"
+    pactl set-card-profile "$GPU_CARD" "$want" 2>/dev/null || true
+    sleep 0.5
+  fi
+}
+
+find_preferred_sink() {
+  local name gpu_sink
+  if [[ -n "$(find_id_by_name "$BT_SINK" || true)" ]]; then
+    printf '%s\n' "$BT_SINK"
+    return 0
+  fi
+  name="$(find_name_re "$CABLE_SINK_RE" 'Audio/Sink' || true)"
+  if [[ -n "$name" ]]; then
+    printf '%s\n' "$name"
+    return 0
+  fi
+  gpu_sink="$(current_gpu_sink)"
+  if [[ "$gpu_sink" == "$GPU_TV_SINK" ]]; then
+    ensure_gpu_profile "$GPU_TV_PROFILE"
+  else
+    ensure_gpu_profile "$GPU_MONITOR_PROFILE"
+  fi
+  if [[ -n "$(find_id_by_name "$gpu_sink" || true)" ]]; then
+    printf '%s\n' "$gpu_sink"
+    return 0
+  fi
+  # Preferred GPU port isn't present (e.g. TV unplugged) — fall back to the monitor.
+  ensure_gpu_profile "$GPU_MONITOR_PROFILE"
+  if [[ -n "$(find_id_by_name "$GPU_MONITOR_SINK" || true)" ]]; then
+    printf '%s\n' "$GPU_MONITOR_SINK"
+    return 0
+  fi
+  return 1
+}
+
+write_preference_stack() {
+  local preferred_sink="$1"
+  local preferred_source="$2"
+  local cable_sink="${3:-}"
+  local gpu_sink
+  gpu_sink="$(current_gpu_sink)"
+  mkdir -p "$(dirname "$STATE")"
+  {
+    echo '[default-nodes]'
+    echo "default.configured.audio.sink=${BT_SINK}"
+    if [[ -n "$cable_sink" ]]; then
+      echo "default.configured.audio.sink.0=${cable_sink}"
+      echo "default.configured.audio.sink.1=${gpu_sink}"
+    else
+      echo "default.configured.audio.sink.0=${gpu_sink}"
+    fi
+    echo "default.configured.audio.source=${preferred_source}"
+  } >"$STATE"
+
+  pw-metadata -n default 0 default.configured.audio.sink \
+    "{\"name\":\"${preferred_sink}\"}" >/dev/null 2>&1 || true
+  pw-metadata -n default 0 default.configured.audio.source \
+    "{\"name\":\"${preferred_source}\"}" >/dev/null 2>&1 || true
+}
+
+apply_policy() {
+  local preferred_src preferred_sink cable_sink sink_id src_id active
+
+  preferred_src="$(find_preferred_source || true)"
+  if [[ -z "$preferred_src" ]]; then
+    log "no preferred mic yet (waiting for Voice Chat / EasyEffects / Fifine)"
+    return 0
+  fi
+
+  preferred_sink="$(find_preferred_sink || true)"
+  if [[ -z "$preferred_sink" ]]; then
+    log "no preferred sink yet"
+    return 0
+  fi
+
+  cable_sink="$(find_name_re "$CABLE_SINK_RE" 'Audio/Sink' || true)"
+  write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+
+  src_id="$(find_id_by_name "$preferred_src" || true)"
+  if [[ -n "$src_id" ]]; then
+    active="$(wpctl inspect @DEFAULT_AUDIO_SOURCE@ 2>/dev/null \
+      | sed -n 's/.*node.name = "\(.*\)"/\1/p' | head -1 || true)"
+    if [[ "$active" != "$preferred_src" ]]; then
+      log "default mic → ${preferred_src} (id ${src_id})"
+      wpctl set-default "$src_id"
+      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+    fi
+  fi
+
+  sink_id="$(find_id_by_name "$preferred_sink" || true)"
+  if [[ -n "$sink_id" ]]; then
+    active="$(wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null \
+      | sed -n 's/.*node.name = "\(.*\)"/\1/p' | head -1 || true)"
+    if [[ "$active" != "$preferred_sink" ]]; then
+      log "default sink → ${preferred_sink} (id ${sink_id})"
+      wpctl set-default "$sink_id"
+      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+    fi
+  fi
+}
+
+if ! command -v pw-dump >/dev/null || ! command -v wpctl >/dev/null || ! command -v python3 >/dev/null; then
+  echo "Need pw-dump, wpctl, and python3" >&2
+  exit 1
+fi
+
+log "started (sink: BT↔USB cable↔GPU [TV while gamescope active, else monitor] · source: VoiceChat→EE→Fifine)"
+apply_policy
+
+if [[ "${1:-}" == "once" ]]; then
+  exit 0
+fi
+
+if ! command -v pactl >/dev/null; then
+  echo "pactl required for watch mode" >&2
+  exit 1
+fi
+
+pactl subscribe | while read -r line; do
+  case "$line" in
+    *sink*|*source*|*server*)
+      sleep 0.25
+      apply_policy || true
+      ;;
+  esac
+done

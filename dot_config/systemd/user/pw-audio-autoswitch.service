@@ -1,0 +1,12 @@
+[Unit]
+Description=Prefer Edifier headset (BT/USB) + Voice Chat mic
+After=pipewire.service wireplumber.service pipewire-pulse.service easyeffects.service
+Wants=wireplumber.service
+
+[Service]
+ExecStart=%h/.local/bin/pw-audio-autoswitch
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

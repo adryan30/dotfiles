@@ -13,6 +13,7 @@ binds {
     Mod+B                               hotkey-overlay-title="Open Browser: Zen Browser" { spawn "zen-browser"; }
     Mod+D                               hotkey-overlay-title="Open Discord" { spawn "discord"; }
     Mod+G                               hotkey-overlay-title="Open Steam" { spawn "steam"; }
+    Mod+Shift+H                         hotkey-overlay-title="Open Harbor (HDR/gamescope)" { spawn "gamescope-hdr" "harbor"; }
     Mod+A                               hotkey-overlay-title="Soundboard launcher (/sb)" { spawn-sh "noctalia msg panel-toggle launcher /sb"; }
     Mod+Shift+A                         hotkey-overlay-title="Open Soundboard GUI" { spawn "/home/potato/.local/bin/soundboard"; }
 

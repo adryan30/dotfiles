@@ -7,8 +7,8 @@ output "DP-1" {
     position x=0 y=0
 }
 
-// TV sits to the right of the ultrawide: its top-left corner meets the
-// ultrawide's bottom-right corner, so the whole TV hangs below the ultrawide.
+// Ultrawide sits bottom-left; TV sits top-right — its bottom-left corner
+// meets the ultrawide's top-right corner.
 output "HDMI-A-1" {
-    position x=3440 y=1440
+    position x=3440 y=-2160
 }
