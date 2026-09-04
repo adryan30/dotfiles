@@ -12,7 +12,12 @@ binds {
     Mod+Return                          hotkey-overlay-title="Open Terminal: Ghostty" { spawn "ghostty"; }
     Mod+B                               hotkey-overlay-title="Open Browser: Zen Browser" { spawn "zen-browser"; }
     Mod+D                               hotkey-overlay-title="Open Discord" { spawn "discord"; }
-    Mod+G                               hotkey-overlay-title="Open Steam" { spawn "steam"; }
+    // MANGOHUD=1 makes every Vulkan/Proton (DXVK, VKD3D) game Steam launches
+    // pick up MangoHud's Vulkan implicit layer — no per-game launch options
+    // needed. Config is the global ~/.config/MangoHud/MangoHud.conf (Goverlay
+    // writes there). Pure-OpenGL-only titles are the one gap: those still
+    // need `mangohud %command%` in that game's own launch options.
+    Mod+G                               hotkey-overlay-title="Open Steam" { spawn-sh "MANGOHUD=1 steam"; }
     Mod+A                               hotkey-overlay-title="Soundboard launcher (/sb)" { spawn-sh "noctalia msg panel-toggle launcher /sb"; }
     Mod+Shift+A                         hotkey-overlay-title="Open Soundboard GUI" { spawn "/home/potato/.local/bin/soundboard"; }
 
