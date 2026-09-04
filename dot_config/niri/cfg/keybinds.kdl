@@ -17,7 +17,19 @@ binds {
     // needed. Config is the global ~/.config/MangoHud/MangoHud.conf (Goverlay
     // writes there). Pure-OpenGL-only titles are the one gap: those still
     // need `mangohud %command%` in that game's own launch options.
-    Mod+G                               hotkey-overlay-title="Open Steam" { spawn-sh "MANGOHUD=1 steam"; }
+    //
+    // LD_PRELOAD=libgamemodeauto.so.0 is what `gamemoderun` itself actually
+    // does (`exec env LD_PRELOAD=libgamemodeauto.so.0 "$@"` — read the real
+    // script at /usr/bin/gamemoderun), so setting it here should reach every
+    // game the same way MANGOHUD=1 does. Less proven than the MangoHud path
+    // though: this isn't a container-aware opt-in layer, it's a raw preload
+    // riding through Steam's own launch chain into the Proton/pressure-vessel
+    // container, which I can't fully verify without a real game running.
+    // Check after launching one: `gamemoded -s` should say gamemode is
+    // active for that game's PID, not "gamemode is inactive". If it doesn't
+    // pick it up, fall back to `gamemoderun %command%` in that game's own
+    // Steam launch options instead.
+    Mod+G                               hotkey-overlay-title="Open Steam" { spawn-sh "MANGOHUD=1 LD_PRELOAD=libgamemodeauto.so.0 steam"; }
     Mod+A                               hotkey-overlay-title="Soundboard launcher (/sb)" { spawn-sh "noctalia msg panel-toggle launcher /sb"; }
     Mod+Shift+A                         hotkey-overlay-title="Open Soundboard GUI" { spawn "/home/potato/.local/bin/soundboard"; }
 
