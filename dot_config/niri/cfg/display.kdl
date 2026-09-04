@@ -9,6 +9,11 @@ output "DP-1" {
 
 // Ultrawide sits bottom-left; TV sits top-right — its bottom-left corner
 // meets the ultrawide's top-right corner.
+//
+// VRR on-demand: only turns on while a window matching the
+// variable-refresh-rate rule (gamescope — see rules.kdl) is on this output,
+// so normal TV use (video, desktop) never sees a VRR-related flicker.
 output "HDMI-A-1" {
     position x=3440 y=-2160
+    variable-refresh-rate on-demand=true
 }
