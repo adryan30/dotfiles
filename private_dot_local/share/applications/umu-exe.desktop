@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Program (Proton/umu)
+Comment=Run a Windows .exe through Proton via umu-launcher
+Exec=umu-run %f
+Icon=wine
+Terminal=false
+NoDisplay=true
+StartupNotify=true
+MimeType=application/x-ms-dos-executable;
