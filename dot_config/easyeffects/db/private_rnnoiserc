@@ -1,4 +1,5 @@
 [sie][RNNoise#0]
+bypass=true
 enableVad=true
 modelName=
 release=150
