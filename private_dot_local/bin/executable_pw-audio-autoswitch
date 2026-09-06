@@ -2,7 +2,7 @@
 # Outputs (priority): Edifier BT → Edifier USB cable → GPU output for the
 # active context (TV over HDMI while gamescope-hdr is running, monitor over
 # DP otherwise — see GAMESCOPE_MARKER).
-# Input: Voice Chat → EasyEffects Source → Fifine USB mic.
+# Input: Voice Chat → Mic FX Source → Fifine USB mic.
 # Never uses Edifier headset mics (BT HFP or USB).
 set -euo pipefail
 
@@ -21,7 +21,7 @@ GPU_TV_SINK="alsa_output.pci-0000_03_00.1.hdmi-stereo-extra3"       # Beyond TV,
 GPU_TV_PROFILE="output:hdmi-stereo-extra3"
 GAMESCOPE_MARKER="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/gamescope-active"
 VOICE_CHAT_SRC="voice_chat"
-EE_SRC="easyeffects_source"
+MIC_FX_SRC="mic_fx_source"
 USB_MIC_RE='^alsa_input\.usb-.*(fifine|3142)'
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/wireplumber/default-nodes"
 
@@ -65,7 +65,7 @@ if best:
 
 find_preferred_source() {
   local name
-  for name in "$VOICE_CHAT_SRC" "$EE_SRC"; do
+  for name in "$VOICE_CHAT_SRC" "$MIC_FX_SRC"; do
     if [[ -n "$(find_id_by_name "$name" || true)" ]]; then
       printf '%s\n' "$name"
       return 0
@@ -163,7 +163,7 @@ apply_policy() {
 
   preferred_src="$(find_preferred_source || true)"
   if [[ -z "$preferred_src" ]]; then
-    log "no preferred mic yet (waiting for Voice Chat / EasyEffects / Fifine)"
+    log "no preferred mic yet (waiting for Voice Chat / Mic FX / Fifine)"
     return 0
   fi
 
@@ -204,7 +204,7 @@ if ! command -v pw-dump >/dev/null || ! command -v wpctl >/dev/null || ! command
   exit 1
 fi
 
-log "started (sink: BT↔USB cable↔GPU [TV while gamescope active, else monitor] · source: VoiceChat→EE→Fifine)"
+log "started (sink: BT↔USB cable↔GPU [TV while gamescope active, else monitor] · source: VoiceChat→MicFX→Fifine)"
 apply_policy
 
 if [[ "${1:-}" == "once" ]]; then
