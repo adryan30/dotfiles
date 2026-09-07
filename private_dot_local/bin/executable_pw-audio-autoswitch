@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # Outputs (priority): Edifier BT → Edifier USB cable → GPU output for the
-# active context (TV over HDMI while gamescope-hdr is running, monitor over
-# DP otherwise — see GAMESCOPE_MARKER).
+# active context (TV over HDMI while a gamescope session is active, monitor
+# over DP otherwise — see gamescope_context_active). Two independent signals
+# count as "gamescope active": our own gamescope-hdr's runtime marker file,
+# and CachyOS's gamescope-session.target (the real SteamOS-style Big Picture
+# session, selectable at the greetd login screen) — see the companion
+# pw-audio-autoswitch-gamescope-hook.service, which nudges this script
+# exactly when that target starts/stops.
 # Input: Voice Chat → Mic FX Source → Fifine USB mic.
 # Never uses Edifier headset mics (BT HFP or USB).
 set -euo pipefail
@@ -74,10 +79,19 @@ find_preferred_source() {
   find_name_re "$USB_MIC_RE" 'Audio/Source' || true
 }
 
+# True while either "gamescope active" signal is up: our own gamescope-hdr
+# marker file, or CachyOS's real gamescope-session.target. Pure check, no
+# side effects.
+gamescope_context_active() {
+  [[ -f "$GAMESCOPE_MARKER" ]] && return 0
+  systemctl --user is-active --quiet gamescope-session.target 2>/dev/null && return 0
+  return 1
+}
+
 # Which GPU output is preferred when no headset is connected. Pure lookup,
 # no side effects — used for preference-stack bookkeeping as well as here.
 current_gpu_sink() {
-  if [[ -f "$GAMESCOPE_MARKER" ]]; then
+  if gamescope_context_active; then
     printf '%s\n' "$GPU_TV_SINK"
   else
     printf '%s\n' "$GPU_MONITOR_SINK"

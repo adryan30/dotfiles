@@ -1,0 +1,21 @@
+[Unit]
+Description=Nudge pw-audio-autoswitch when the gamescope session starts/stops
+# gamescope-session.target is CachyOS's real SteamOS-style Big Picture
+# session (package: gamescope-session-cachyos), selectable at the greetd
+# login screen — separate from this machine's own gamescope-hdr script.
+# pw-audio-autoswitch checks this target's active state directly
+# (gamescope_context_active), but that alone won't wake up its
+# pactl-subscribe loop — this unit's Exec{Start,Stop} give it an explicit,
+# deterministic kick at exactly the right moments instead of hoping an
+# incidental sink/source event fires in time.
+PartOf=gamescope-session.target
+After=gamescope-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=%h/.local/bin/pw-audio-autoswitch once
+ExecStop=%h/.local/bin/pw-audio-autoswitch once
+
+[Install]
+WantedBy=gamescope-session.target
