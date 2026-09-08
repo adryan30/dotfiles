@@ -89,7 +89,17 @@ gamescope_context_active() {
 }
 
 # Which GPU output is preferred when no headset is connected. Pure lookup,
-# no side effects — used for preference-stack bookkeeping as well as here.
+# no side effects. Callers should compute this ONCE per apply_policy() pass
+# and pass it down — it spawns a systemctl call, and both find_preferred_sink
+# and write_preference_stack used to call it independently (up to twice per
+# event), which added real subprocess overhead to every single audio event
+# even when totally irrelevant (headset already preferred). That overhead,
+# multiplied by a burst of events with zero debouncing (see the pactl
+# subscribe loop below), is suspected to have made a pre-existing snapshot
+# race — find_id_by_name takes a one-shot pw-dump snapshot, which can miss a
+# node transiently during rapid graph churn — enough more likely to actually
+# fire in practice, causing an erroneous switch away from a headset that
+# never disconnected.
 current_gpu_sink() {
   if gamescope_context_active; then
     printf '%s\n' "$GPU_TV_SINK"
@@ -118,7 +128,7 @@ ensure_gpu_profile() {
 }
 
 find_preferred_sink() {
-  local name gpu_sink
+  local gpu_sink="$1" name
   if [[ -n "$(find_id_by_name "$BT_SINK" || true)" ]]; then
     printf '%s\n' "$BT_SINK"
     return 0
@@ -128,7 +138,6 @@ find_preferred_sink() {
     printf '%s\n' "$name"
     return 0
   fi
-  gpu_sink="$(current_gpu_sink)"
   if [[ "$gpu_sink" == "$GPU_TV_SINK" ]]; then
     ensure_gpu_profile "$GPU_TV_PROFILE"
   else
@@ -151,8 +160,7 @@ write_preference_stack() {
   local preferred_sink="$1"
   local preferred_source="$2"
   local cable_sink="${3:-}"
-  local gpu_sink
-  gpu_sink="$(current_gpu_sink)"
+  local gpu_sink="$4"
   mkdir -p "$(dirname "$STATE")"
   {
     echo '[default-nodes]'
@@ -173,7 +181,7 @@ write_preference_stack() {
 }
 
 apply_policy() {
-  local preferred_src preferred_sink cable_sink sink_id src_id active
+  local preferred_src preferred_sink cable_sink sink_id src_id active gpu_sink
 
   preferred_src="$(find_preferred_source || true)"
   if [[ -z "$preferred_src" ]]; then
@@ -181,14 +189,19 @@ apply_policy() {
     return 0
   fi
 
-  preferred_sink="$(find_preferred_sink || true)"
+  # Computed once per pass and threaded through — see the comment on
+  # current_gpu_sink for why this used to be called (and spawn a systemctl)
+  # up to twice per single audio event.
+  gpu_sink="$(current_gpu_sink)"
+
+  preferred_sink="$(find_preferred_sink "$gpu_sink" || true)"
   if [[ -z "$preferred_sink" ]]; then
     log "no preferred sink yet"
     return 0
   fi
 
   cable_sink="$(find_name_re "$CABLE_SINK_RE" 'Audio/Sink' || true)"
-  write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+  write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink" "$gpu_sink"
 
   src_id="$(find_id_by_name "$preferred_src" || true)"
   if [[ -n "$src_id" ]]; then
@@ -197,7 +210,7 @@ apply_policy() {
     if [[ "$active" != "$preferred_src" ]]; then
       log "default mic → ${preferred_src} (id ${src_id})"
       wpctl set-default "$src_id"
-      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink" "$gpu_sink"
     fi
   fi
 
@@ -208,7 +221,7 @@ apply_policy() {
     if [[ "$active" != "$preferred_sink" ]]; then
       log "default sink → ${preferred_sink} (id ${sink_id})"
       wpctl set-default "$sink_id"
-      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink"
+      write_preference_stack "$preferred_sink" "$preferred_src" "$cable_sink" "$gpu_sink"
     fi
   fi
 }
@@ -233,7 +246,14 @@ fi
 pactl subscribe | while read -r line; do
   case "$line" in
     *sink*|*source*|*server*)
-      sleep 0.25
+      # A game's audio subsystem coming up (Proton/Wine especially) can fire
+      # a burst of many sink/source events within a second or two. Without
+      # this, each one ran a full apply_policy() — ~9 subprocess spawns,
+      # each doing its own one-shot pw-dump snapshot of a graph that's still
+      # rapidly changing underneath it. Drain the rest of the burst first so
+      # a whole burst costs one pass, not N, against a graph that's had a
+      # moment to settle.
+      while read -r -t 0.3 _extra; do :; done
       apply_policy || true
       ;;
   esac
