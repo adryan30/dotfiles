@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Dynamically float windows that set title/app-id *after* opening.
+Dynamic niri window handling that static window-rules can't express.
 
-Zen/Firefox Bitwarden (and other extension) popups open with a generic title,
-so niri's open-floating window-rules never match. This watches the event
-stream and floats + PiP-places them in the top-right when the real title lands.
-
-Based on: https://github.com/niri-wm/niri/discussions/1599
+- Zen/Firefox Bitwarden (and other extension) popups open with a generic
+  title, so niri's open-floating window-rules never match. This watches the
+  event stream and floats + PiP-places them in the top-right once the real
+  title lands. Based on: https://github.com/niri-wm/niri/discussions/1599
+- niri window-rules can't match on environment variables at all. Windows
+  whose process has GAME=1 set (games launched through a wrapper that sets
+  it) get moved to workspace 2 on their own output, once.
 """
 
 from __future__ import annotations
@@ -26,6 +28,9 @@ from time import sleep
 POPUP_WIDTH = 420
 POPUP_HEIGHT = 560
 MARGIN = 32
+
+# Workspace index (per-output) that GAME=1 windows get routed to.
+GAME_WORKSPACE = 2
 
 
 @dataclass(kw_only=True)
@@ -164,6 +169,101 @@ def float_pip(window_id: int, width: int, height: int) -> None:
     )
 
 
+GAME_ROUTED: set[int] = set()
+
+
+def has_game_env(pid: int) -> bool:
+    """True if pid's environment has GAME=1 (set by a game-launch wrapper)."""
+    try:
+        raw = Path(f"/proc/{pid}/environ").read_bytes()
+    except OSError:
+        return False
+    return b"GAME=1" in raw.split(b"\0")
+
+
+def route_game_window(win: dict) -> None:
+    win_id = win["id"]
+    if win_id in GAME_ROUTED:
+        return
+    pid = win.get("pid")
+    if pid is None or not has_game_env(pid):
+        return
+    GAME_ROUTED.add(win_id)
+    log.info(
+        "GAME=1 window id=%s app_id=%r pid=%s -> workspace %s",
+        win_id,
+        win.get("app_id"),
+        pid,
+        GAME_WORKSPACE,
+    )
+    send(
+        {
+            "Action": {
+                "MoveWindowToWorkspace": {
+                    "window_id": win_id,
+                    "reference": {"Index": GAME_WORKSPACE},
+                    "focus": False,
+                }
+            }
+        }
+    )
+
+
+# Zen/Firefox picture-in-picture. niri has no sticky/always-on-top windows
+# (niri-wm/niri#932), so we emulate "visible on every workspace" by moving the
+# PiP to the active workspace on its own output as the user switches.
+PIP = Match(
+    app_id=r"^(zen|firefox|org\.mozilla\.firefox|librewolf)$",
+    title=r"^Picture-in-Picture$",
+)
+
+
+def is_pip(win: dict) -> bool:
+    return PIP.matches(win)
+
+
+def follow_pip(workspaces: list[dict], pip: dict | None) -> dict | None:
+    """Move the tracked PiP to the active workspace on its own output."""
+    if pip is None:
+        return pip
+
+    # Learn the PiP's output from its current workspace id.
+    ws_id = pip.get("ws")
+    out = pip.get("output")
+    for ws in workspaces:
+        if ws.get("id") == ws_id:
+            out = ws.get("output")
+    if out is None:
+        return pip
+
+    target = None
+    for ws in workspaces:
+        if ws.get("output") == out and ws.get("is_active"):
+            target = ws
+            break
+    if target is None or target.get("id") == ws_id:
+        return pip
+
+    try:
+        send(
+            {
+                "Action": {
+                    "MoveWindowToWorkspace": {
+                        "window_id": pip["id"],
+                        "reference": {"Id": target["id"]},
+                        "focus": False,
+                    }
+                }
+            }
+        )
+        log.info("moved PiP id=%s to workspace %s", pip["id"], target["id"])
+        pip["ws"] = target["id"]
+        pip["output"] = target.get("output")
+    except Exception as err:
+        log.error("PiP follow failed: %s", err)
+    return pip
+
+
 def matching_rule(win: dict) -> Rule | None:
     for rule in RULES:
         if rule.matches(win):
@@ -195,19 +295,31 @@ def run_once() -> None:
     sock.shutdown(SHUT_WR)
 
     windows: dict[int, dict] = {}
+    pip: dict | None = None
     for line in f:
         event = json.loads(line)
 
         if changed := event.get("WindowsChanged"):
             for win in changed["windows"]:
                 update_matched(windows, win)
+                route_game_window(win)
+                if is_pip(win):
+                    pip = {"id": win["id"], "ws": win.get("workspace_id")}
             windows = {win["id"]: win for win in changed["windows"]}
         elif changed := event.get("WindowOpenedOrChanged"):
             win = changed["window"]
             update_matched(windows, win)
+            route_game_window(win)
+            if is_pip(win):
+                pip = {"id": win["id"], "ws": win.get("workspace_id")}
             windows[win["id"]] = win
+        elif changed := event.get("WorkspacesChanged"):
+            pip = follow_pip(changed["workspaces"], pip)
         elif changed := event.get("WindowClosed"):
+            if pip is not None and pip["id"] == changed["id"]:
+                pip = None
             windows.pop(changed["id"], None)
+            GAME_ROUTED.discard(changed["id"])
 
 
 def main() -> None:
