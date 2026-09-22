@@ -222,26 +222,9 @@ def is_pip(win: dict) -> bool:
     return PIP.matches(win)
 
 
-def follow_pip(workspaces: list[dict], pip: dict | None) -> dict | None:
-    """Move the tracked PiP to the active workspace on its own output."""
-    if pip is None:
-        return pip
-
-    # Learn the PiP's output from its current workspace id.
-    ws_id = pip.get("ws")
-    out = pip.get("output")
-    for ws in workspaces:
-        if ws.get("id") == ws_id:
-            out = ws.get("output")
-    if out is None:
-        return pip
-
-    target = None
-    for ws in workspaces:
-        if ws.get("output") == out and ws.get("is_active"):
-            target = ws
-            break
-    if target is None or target.get("id") == ws_id:
+def follow_pip(workspace_id: int | None, pip: dict | None) -> dict | None:
+    """Move the tracked PiP to the workspace that just got activated."""
+    if pip is None or workspace_id is None or pip.get("ws") == workspace_id:
         return pip
 
     try:
@@ -250,15 +233,14 @@ def follow_pip(workspaces: list[dict], pip: dict | None) -> dict | None:
                 "Action": {
                     "MoveWindowToWorkspace": {
                         "window_id": pip["id"],
-                        "reference": {"Id": target["id"]},
+                        "reference": {"Id": workspace_id},
                         "focus": False,
                     }
                 }
             }
         )
-        log.info("moved PiP id=%s to workspace %s", pip["id"], target["id"])
-        pip["ws"] = target["id"]
-        pip["output"] = target.get("output")
+        log.info("moved PiP id=%s to workspace %s", pip["id"], workspace_id)
+        pip["ws"] = workspace_id
     except Exception as err:
         log.error("PiP follow failed: %s", err)
     return pip
@@ -313,8 +295,8 @@ def run_once() -> None:
             if is_pip(win):
                 pip = {"id": win["id"], "ws": win.get("workspace_id")}
             windows[win["id"]] = win
-        elif changed := event.get("WorkspacesChanged"):
-            pip = follow_pip(changed["workspaces"], pip)
+        elif changed := event.get("WorkspaceActivated"):
+            pip = follow_pip(changed.get("id"), pip)
         elif changed := event.get("WindowClosed"):
             if pip is not None and pip["id"] == changed["id"]:
                 pip = None
