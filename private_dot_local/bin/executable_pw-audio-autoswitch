@@ -12,6 +12,7 @@
 set -euo pipefail
 
 BT_MAC="64_68_76_5A_F8_F5"
+BT_ADDR="64:68:76:5A:F8:F5"
 BT_SINK="bluez_output.${BT_MAC}.1"
 CABLE_SINK_RE='^alsa_output\.usb-EDFIER_EDIFIER_W820NB'
 # The GPU's HDMI/DP audio codec only instantiates one port's sink at a time —
@@ -45,6 +46,48 @@ for obj in json.load(sys.stdin):
         print(obj["id"])
         break
 ' "$want"
+}
+
+# One-shot pw-dump lookup of the BT sink node: prints "<id> <state>" when
+# present (state: running/idle/suspended/error/...), nothing when absent.
+find_bt_sink_state() {
+  pw-dump 2>/dev/null | python3 -c '
+import json, sys
+want = sys.argv[1]
+for obj in json.load(sys.stdin):
+    if obj.get("type") != "PipeWire:Interface:Node":
+        continue
+    info = obj.get("info") or {}
+    props = info.get("props") or {}
+    if props.get("node.name") == want:
+        print(obj["id"], info.get("state") or "")
+        break
+' "$1"
+}
+
+# The AX200 (usb 1-10) shares an xHCI root hub with the 8BitDo controller port
+# (usb 1-5); controller plug/unplug events can stir the USB scheduler while
+# the adapter is autosuspended and the A2DP transport dies with "Missing
+# completion reports for packet". The node then lingers in error state (or
+# vanishes while the device stays connected) and everything routed to it
+# plays silence. Detect that and bounce the Bluetooth connection to rebuild
+# the transport; cooldown prevents a reconnect loop if recovery keeps failing.
+last_bt_recovery=0
+ensure_bt_transport_alive() {
+  local line now
+  line="$(find_bt_sink_state "$BT_SINK" || true)"
+  if [[ -z "$line" ]]; then
+    bluetoothctl info "$BT_ADDR" 2>/dev/null | grep -q 'Connected: yes' || return 0
+  elif [[ "$line" != *" error" ]]; then
+    return 0
+  fi
+  now="$(date +%s)"
+  (( now - last_bt_recovery < 30 )) && return 0
+  last_bt_recovery="$now"
+  log "BT transport dead (node ${line:-absent, device connected}) — reconnecting headset"
+  bluetoothctl disconnect "$BT_ADDR" >/dev/null 2>&1 || true
+  sleep 1
+  bluetoothctl connect "$BT_ADDR" >/dev/null 2>&1 || true
 }
 
 find_name_re() {
@@ -183,6 +226,7 @@ write_preference_stack() {
 apply_policy() {
   local preferred_src preferred_sink cable_sink sink_id src_id active gpu_sink
 
+  ensure_bt_transport_alive
   preferred_src="$(find_preferred_source || true)"
   if [[ -z "$preferred_src" ]]; then
     log "no preferred mic yet (waiting for Voice Chat / Mic FX / Fifine)"
