@@ -31,4 +31,15 @@ trap cleanup EXIT
 touch "$marker"
 nudge_audio
 
-gamescope --backend drm --hdr-enabled -- "$@"
+# Same mode file the Steam Big Picture session reads. The TV's EDID preferred
+# mode is 4K60; without this, gamescope locks the HDMI output there.
+export GAMESCOPE_MODE_SAVE_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/gamescope/modes.cfg"
+
+# HDMI-A-1 only: the ultrawide (DP-1) stays off for this session.
+# --adaptive-sync turns on the panel's HDMI VRR (48 Hz up to the mode rate).
+gamescope \
+    --backend drm \
+    --hdr-enabled \
+    --adaptive-sync \
+    -O HDMI-A-1 \
+    -- "$@"
