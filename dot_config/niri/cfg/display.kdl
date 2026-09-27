@@ -14,6 +14,10 @@ output "DP-1" {
 // variable-refresh-rate rule (gamescope — see rules.kdl) is on this output,
 // so normal TV use (video, desktop) never sees a VRR-related flicker.
 output "HDMI-A-1" {
+    // EDID preferred mode is 4K60. 4K120 is the highest rate this port
+    // advertises (55C6K, HDMI 2.1). VRR on-demand still only engages for
+    // gamescope, and it cannot go above this mode.
+    mode "3840x2160@120.000"
     position x=3440 y=-2160
     variable-refresh-rate on-demand=true
 }
