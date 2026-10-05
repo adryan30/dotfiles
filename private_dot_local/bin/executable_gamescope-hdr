@@ -37,9 +37,16 @@ export GAMESCOPE_MODE_SAVE_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/gamescope/mod
 
 # HDMI-A-1 only: the ultrawide (DP-1) stays off for this session.
 # --adaptive-sync turns on the panel's HDMI VRR (48 Hz up to the mode rate).
+extra=()
+if [[ ${GAMESCOPE_STEAM_INTEGRATION:-} == 1 ]]; then
+    # Separate Xwayland for the game, plus the Steam integration socket
+    # (frame limiter, Switch to Desktop).
+    extra+=(--steam --xwayland-count 2)
+fi
 gamescope \
     --backend drm \
     --hdr-enabled \
     --adaptive-sync \
     -O HDMI-A-1 \
+    "${extra[@]}" \
     -- "$@"

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# In front of /usr/bin on PATH. Steam's "Switch to Desktop" calls
+# `steamos-session-select plasma`. The packaged helper only rewrites an
+# SDDM autologin file, which this machine does not use (greetd). From the
+# niri gaming-mode shortcut, shutting Steam down is the whole switch:
+# gamescope exits and niri, still logged in, takes the displays back.
+set -euo pipefail
+
+real=/usr/bin/steamos-session-select
+
+case "${1:-}" in
+plasma)
+    steam -shutdown || true
+    if systemctl --user is-active --quiet gamescope-session.target; then
+        systemctl --user stop gamescope-session.target || true
+    fi
+    ;;
+gamescope)
+    if systemctl --user is-active --quiet gamescope-session.target; then
+        exit 0
+    fi
+    exec "${HOME}/.local/bin/gamescope-steam"
+    ;;
+"")
+    exec "$real"
+    ;;
+*)
+    exec "$real" "$@"
+    ;;
+esac

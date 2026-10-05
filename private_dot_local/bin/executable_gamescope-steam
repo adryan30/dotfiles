@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Gaming mode from the niri session: Steam Big Picture on the TV, no greeter.
+#
+# gamescope takes DRM master on HDMI-A-1 and niri pauses. Leaving Steam (or
+# Steam's "Switch to Desktop", via steamos-session-select) exits gamescope
+# and niri resumes with the same login. There is no password because the
+# greetd session never ends.
+set -euo pipefail
+
+runtime="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+mkdir -p "$runtime"
+exec 9>"$runtime/gamescope-steam.lock"
+if ! flock -n 9; then
+    echo "gaming mode is already running" >&2
+    exit 0
+fi
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    notify-send "Gaming mode" "$1" || true
+}
+
+steam_running() {
+    pgrep -u "$(id -u)" -x steam >/dev/null 2>&1
+}
+
+# Steam is single-instance. A desktop client would swallow the gamescope
+# launch and exit immediately, which would drop straight back to niri.
+if steam_running; then
+    steam -shutdown || true
+    for _ in $(seq 1 40); do
+        steam_running || break
+        sleep 0.25
+    done
+    if steam_running; then
+        notify "Steam is still open, so gaming mode did not start."
+        exit 1
+    fi
+fi
+
+# steam.sh snapshots PATH into SYSTEM_PATH, and "Switch to Desktop" runs
+# steamos-session-select with that PATH. Keep ~/.local/bin first so the
+# wrapper runs instead of the CachyOS helper (that one expects SDDM).
+export PATH="${HOME}/.local/bin:${PATH}"
+export SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0
+export ENABLE_GAMESCOPE_WSI=1
+export STEAM_GAMESCOPE_HDR_SUPPORTED=1
+export STEAM_GAMESCOPE_VRR_SUPPORTED=1
+export STEAM_GAMESCOPE_TEARING_SUPPORTED=1
+export GAMESCOPE_STEAM_INTEGRATION=1
+export gamescope_drm_allow_dynamic_modes_for_external_display=true
+
+if ! "${HOME}/.local/bin/gamescope-hdr" \
+    steam -steamos3 -steampal -steamdeck -gamepadui; then
+    notify "Gamescope exited before Steam came up."
+    exit 1
+fi
