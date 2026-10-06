@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 # Outputs (priority): Edifier BT → Edifier USB cable → GPU output for the
-# active context (TV over HDMI while a gamescope session is active, monitor
-# over DP otherwise — see gamescope_context_active). Two independent signals
-# count as "gamescope active": our own gamescope-hdr's runtime marker file,
-# and CachyOS's gamescope-session.target (the real SteamOS-style Big Picture
-# session, selectable at the greetd login screen) — see the companion
-# pw-audio-autoswitch-gamescope-hook.service, which nudges this script
-# exactly when that target starts/stops.
+# active context (TV over HDMI while gamescope-session.target is active,
+# monitor over DP otherwise — see gamescope_context_active). That target is
+# CachyOS's SteamOS-style Big Picture session. The companion
+# pw-audio-autoswitch-gamescope-hook.service nudges this script when the
+# target starts and stops.
 # Input: Voice Chat → Mic FX Source → Fifine USB mic.
 # Never uses Edifier headset mics (BT HFP or USB).
 set -euo pipefail
@@ -25,7 +23,6 @@ GPU_MONITOR_SINK="alsa_output.pci-0000_03_00.1.hdmi-stereo"        # LG Ultrawid
 GPU_MONITOR_PROFILE="output:hdmi-stereo"
 GPU_TV_SINK="alsa_output.pci-0000_03_00.1.hdmi-stereo-extra3"       # Beyond TV, HDMI
 GPU_TV_PROFILE="output:hdmi-stereo-extra3"
-GAMESCOPE_MARKER="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/gamescope-active"
 VOICE_CHAT_SRC="voice_chat"
 MIC_FX_SRC="mic_fx_source"
 USB_MIC_RE='^alsa_input\.usb-.*(fifine|3142)'
@@ -122,13 +119,9 @@ find_preferred_source() {
   find_name_re "$USB_MIC_RE" 'Audio/Source' || true
 }
 
-# True while either "gamescope active" signal is up: our own gamescope-hdr
-# marker file, or CachyOS's real gamescope-session.target. Pure check, no
-# side effects.
+# True while CachyOS's gamescope-session.target is up. Pure check, no side effects.
 gamescope_context_active() {
-  [[ -f "$GAMESCOPE_MARKER" ]] && return 0
-  systemctl --user is-active --quiet gamescope-session.target 2>/dev/null && return 0
-  return 1
+  systemctl --user is-active --quiet gamescope-session.target 2>/dev/null
 }
 
 # Which GPU output is preferred when no headset is connected. Pure lookup,

@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# greetd session command for Niri. This process stays up across a switch to
+# gamescope and back, so greetd never returns to the greeter and never asks
+# for a password.
+#
+# The greeter must launch this instead of niri-session. That override is
+# /usr/local/share/wayland-sessions/niri.desktop (Name=Niri, scanned before
+# /usr/share, so it replaces the packaged session):
+#
+#   [Desktop Entry]
+#   Name=Niri
+#   Comment=A scrollable-tiling Wayland compositor
+#   Exec=/home/potato/.local/bin/niri-gamescope-session
+#   Type=Application
+#   DesktopNames=niri
+#
+# Super+Shift+G writes "gamescope" to the state file and quits Niri. Steam's
+# "Switch to Desktop" stops gamescope-session.target, and this script starts
+# Niri again. Quitting Niri with no request exits to the greeter.
+set -u
+
+export NIRI_GAMESCOPE_WRAP=1
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/niri-gamescope-session"
+mkdir -p "$state_dir"
+state_file="$state_dir/next"
+wrap_marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/niri-gamescope-wrap"
+touch "$wrap_marker"
+
+log() {
+  printf '%s %s\n' "$(date -Iseconds)" "$*" >>"$state_dir/log"
+}
+
+cleanup() {
+  rm -f "$wrap_marker"
+}
+trap cleanup EXIT
+
+take_next() {
+  local next=""
+  if [[ -f "$state_file" ]]; then
+    next="$(tr -d '[:space:]' <"$state_file" || true)"
+    rm -f "$state_file"
+  fi
+  printf '%s' "$next"
+}
+
+reset_user_env() {
+  systemctl --user unset-environment \
+    XDG_DESKTOP_PORTAL_DIR DISPLAY XAUTHORITY WAYLAND_DISPLAY \
+    XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DESKTOP_SESSION \
+    2>/dev/null || true
+}
+
+run_niri() {
+  log "start niri"
+  reset_user_env
+  /usr/bin/niri-session || log "niri-session exited $?"
+}
+
+run_gamescope() {
+  log "start gamescope-session"
+  reset_user_env
+  /usr/bin/start-gamescope-session || log "start-gamescope-session exited $?"
+}
+
+mode="niri"
+while true; do
+  case "$(take_next)" in
+  logout) log "logout"; exit 0 ;;
+  gamescope) mode="gamescope" ;;
+  niri) mode="niri" ;;
+  esac
+
+  case "$mode" in
+  gamescope)
+    run_gamescope
+    case "$(take_next)" in
+    logout) log "logout"; exit 0 ;;
+    gamescope) mode="gamescope" ;;
+    *) mode="niri" ;;
+    esac
+    ;;
+  *)
+    run_niri
+    case "$(take_next)" in
+    logout) log "logout"; exit 0 ;;
+    gamescope) mode="gamescope" ;;
+    *) log "niri exit, returning to greeter"; exit 0 ;;
+    esac
+    ;;
+  esac
+done
