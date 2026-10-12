@@ -7,16 +7,16 @@ output "DP-1" {
     position x=0 y=0
 }
 
-// Ultrawide sits bottom-left; TV sits top-right — its bottom-left corner
-// meets the ultrawide's top-right corner.
-//
-// VRR on-demand: only turns on while a window matching the
-// variable-refresh-rate rule (gamescope — see rules.kdl) is on this output,
-// so normal TV use (video, desktop) never sees a VRR-related flicker.
+// Beyond TV stays dark in the niri session. Gamescope still drives this
+// connector on its own (systemd user drop-in hdmi-tv.conf). Remove `off`
+// to bring the previous layout back: ultrawide bottom-left, TV top-right
+// (bottom-left of the TV meets the ultrawide's top-right).
 output "HDMI-A-1" {
+    off
+
     // EDID preferred mode is 4K60. 4K120 is the highest rate this port
     // advertises (55C6K, HDMI 2.1). VRR on-demand still only engages for
-    // gamescope, and it cannot go above this mode.
+    // gamescope (see rules.kdl), and it cannot go above this mode.
     mode "3840x2160@120.000"
     position x=3440 y=-2160
     variable-refresh-rate on-demand=true
