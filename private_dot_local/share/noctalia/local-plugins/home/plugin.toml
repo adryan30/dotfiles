@@ -1,0 +1,66 @@
+# Home Assistant panel grouped by area, priority area first.
+# The service owns the HA connection (one template query for layout + state,
+# then /api/stream); the widget and panel only read published state and send
+# commands back through it.
+
+id = "potato/home"
+name = "Home"
+version = "1.0.0"
+plugin_api = 10
+author = "potato"
+license = "MIT"
+tags = ["bar", "panel", "service", "network"]
+icon = "smart-home"
+description = "Home Assistant devices grouped by room: lights, switches, climate, media, and sensor readouts."
+
+[[setting]]
+key = "ha_url"
+type = "string"
+label_key = "settings.ha_url.label"
+description_key = "settings.ha_url.description"
+default = "http://ha.local"
+
+[[setting]]
+key = "ha_token"
+type = "string"
+label_key = "settings.ha_token.label"
+description_key = "settings.ha_token.description"
+default = ""
+
+[[setting]]
+key = "priority_area"
+type = "string"
+label_key = "settings.priority_area.label"
+description_key = "settings.priority_area.description"
+default = "adryan"
+
+[[setting]]
+key = "climate_panel"
+type = "string"
+label_key = "settings.climate_panel.label"
+description_key = "settings.climate_panel.description"
+default = "potato/midea-ac:panel"
+advanced = true
+
+[[widget]]
+id = "home"
+entry = "widget.luau"
+
+  [[widget.setting]]
+  key = "show_count"
+  type = "bool"
+  label_key = "settings.show_count.label"
+  default = true
+
+[[service]]
+id = "connection"
+entry = "service.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 480
+height = 640
+placement = "attached"
+position = "auto"
+open_near_click = true

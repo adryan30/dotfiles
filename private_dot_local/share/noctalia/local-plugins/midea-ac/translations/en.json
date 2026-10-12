@@ -1,0 +1,76 @@
+{
+  "title": "Air conditioner",
+  "settings": {
+    "ha_url": {
+      "label": "Home Assistant URL",
+      "description": "Base URL, e.g. http://ha.local"
+    },
+    "ha_token": {
+      "label": "Access token",
+      "description": "Home Assistant long-lived access token"
+    },
+    "climate_entity": { "label": "Climate entity" },
+    "power_entity": { "label": "Power sensor" },
+    "outdoor_entity": { "label": "Outdoor temperature sensor" },
+    "display_entity": { "label": "Display switch" },
+    "purifier_entity": { "label": "Purifier switch" },
+    "show_temperature": { "label": "Show room temperature in the bar" }
+  },
+  "status": {
+    "unconfigured": "Not configured",
+    "connecting": "Connecting…",
+    "auth_failed": "Token rejected",
+    "unreachable": "Home Assistant unreachable",
+    "unavailable": "AC unavailable",
+    "off": "Off"
+  },
+  "modes": {
+    "auto": "Auto",
+    "cool": "Cool",
+    "dry": "Dry",
+    "fan_only": "Fan",
+    "heat": "Heat",
+    "heat_cool": "Auto"
+  },
+  "presets": {
+    "none": "Normal",
+    "eco": "Eco",
+    "sleep": "Sleep",
+    "boost": "Turbo",
+    "away": "Away"
+  },
+  "fans": {
+    "silent": "Silent",
+    "low": "Low",
+    "medium": "Med",
+    "high": "High",
+    "max": "Max",
+    "auto": "Auto"
+  },
+  "swings": {
+    "off": "Off",
+    "vertical": "Vertical",
+    "horizontal": "Horizontal",
+    "both": "Both"
+  },
+  "panel": {
+    "mode": "Mode",
+    "preset": "Preset",
+    "fan": "Fan",
+    "swing": "Swing",
+    "extras": "Extras",
+    "display": "Display",
+    "purifier": "Purifier",
+    "room": "Room {temp}°",
+    "outside": "Outside {temp}°",
+    "power": "{watts} W",
+    "turbo_hint": "Turbo is available in Cool and Auto"
+  },
+  "widget": {
+    "tooltip": "{name}: {state}"
+  },
+  "notifications": {
+    "command_failed": "AC command failed ({status})",
+    "auth_failed": "Home Assistant rejected the access token"
+  }
+}
