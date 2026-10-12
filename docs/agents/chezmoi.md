@@ -7,7 +7,7 @@ Operational companion to [ADR-0001](../adr/0001-chezmoi-source-is-canonical.md).
 1. Resolve source: `chezmoi source-path`
 2. Check the path: `chezmoi source-path -- <absolute-or-home-path>`  
    - Prints a source path → **managed**. Edit that source file only.  
-   - Errors / empty → unmanaged. Edit the target only if it should stay unmanaged; otherwise `chezmoi add` after the change (or add then edit source).
+   - Errors / empty → unmanaged. If it should become managed (any new config, plugin, or script meant to persist), create it under the sourceDir and `chezmoi apply`; never write the target first and add it later. Editor tools on live targets leave Cursor inline diffs that rewrite the file on every startup.
 3. Optional inventory: `chezmoi managed`
 
 ## Edit → apply

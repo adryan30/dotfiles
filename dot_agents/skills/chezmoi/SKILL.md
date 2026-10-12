@@ -17,7 +17,7 @@ Managed home files are owned by the **source**, not the live target. SourceDir i
 1. **Classify the path** before create/edit/delete under `$HOME` or the source repo:
    - `src="$(chezmoi source-path -- "$TARGET" 2>/dev/null || true)"`
    - Non-empty `src` → managed; edit `"$src"` only.
-   - Empty → unmanaged; leave unmanaged, or `chezmoi add "$TARGET"` then edit the new source path.
+   - Empty → unmanaged. For anything new that should persist (configs, plugins, scripts), create it under sourceDir and apply; never write the target first and `chezmoi add` later. Agent editor writes to live targets leave Cursor inline diffs that rewrite the file on every Cursor startup (hot-reload churn).
 2. **Edit source** (or `chezmoi edit -- "$TARGET"`). Do not write managed targets in place.
 3. **Apply**: `chezmoi apply --dry-run --verbose`, then `chezmoi apply` when the diff is right.
 4. **Ship**: in SourceDir (`git -C "$(chezmoi source-path)"`), commit every source change from this work and `git push` to origin. This is part of the edit, not a later favour.
