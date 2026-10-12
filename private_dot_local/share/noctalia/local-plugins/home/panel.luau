@@ -114,11 +114,32 @@ local function formatNumber(value)
   return string.format("%.1f", value)
 end
 
+-- Switches/lights named after a climate entity in the same room (e.g. adryan_ac_display)
+-- are that AC's own settings and belong in its detail panel, not the room list.
+local function climateCompanionPrefixes(area)
+  local prefixes = {}
+  for _, id in ipairs(area.entities or {}) do
+    local objectId = id:match("^climate%.(.+)$")
+    if objectId then table.insert(prefixes, objectId .. "_") end
+  end
+  return prefixes
+end
+
+local function isClimateCompanion(e, prefixes)
+  if e.domain ~= "switch" and e.domain ~= "light" then return false end
+  local objectId = e.id:match("^[^.]+%.(.+)$") or ""
+  for _, prefix in ipairs(prefixes) do
+    if string.sub(objectId, 1, #prefix) == prefix then return true end
+  end
+  return false
+end
+
 local function splitArea(area)
   local devices, sensors = {}, {}
+  local prefixes = climateCompanionPrefixes(area)
   for _, id in ipairs(area.entities or {}) do
     local e = home.entities[id]
-    if e then
+    if e and not isUnavailable(e) and not isClimateCompanion(e, prefixes) then
       if e.domain == "sensor" then table.insert(sensors, e) else table.insert(devices, e) end
     end
   end
@@ -360,7 +381,10 @@ render = function()
 
   local cards = {}
   for _, area in ipairs(orderedAreas()) do
-    table.insert(cards, areaCard(area))
+    local devices, sensors = splitArea(area)
+    if #devices > 0 or #sensors > 0 then
+      table.insert(cards, areaCard(area))
+    end
   end
 
   local body

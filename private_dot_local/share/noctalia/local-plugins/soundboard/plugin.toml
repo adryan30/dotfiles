@@ -1,0 +1,41 @@
+id = "potato/soundboard"
+name = "Soundboard"
+version = "1.0.0"
+plugin_api = 9
+author = "potato"
+license = "MIT"
+icon = "music"
+description = "Play soundboard clips into Discord via the PipeWire soundboard sink (and headset by default). Type /sb in the launcher."
+tags = ["audio", "launcher", "discord", "utility"]
+dependencies = ["pw-play"]
+
+[[setting]]
+key = "clips_dir"
+type = "string"
+label_key = "settings.clips_dir.label"
+description_key = "settings.clips_dir.description"
+default = "~/.local/share/soundboard/clips"
+
+[[setting]]
+key = "volume"
+type = "float"
+label_key = "settings.volume.label"
+description_key = "settings.volume.description"
+default = 1.0
+min = 0.0
+max = 1.5
+
+[[setting]]
+key = "also_headset"
+type = "bool"
+label_key = "settings.also_headset.label"
+description_key = "settings.also_headset.description"
+default = true
+
+[[launcher_provider]]
+id = "clips"
+entry = "launcher.luau"
+prefix = "sb"
+glyph = "music"
+include_in_global_search = true
+debounce_ms = 0

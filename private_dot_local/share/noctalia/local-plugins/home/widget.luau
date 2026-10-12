@@ -41,11 +41,36 @@ local function roomTemperature(area)
   return nil
 end
 
-local function render()
-  local count = 0
-  for _, entity in pairs(home.entities or {}) do
-    if isActive(entity) then count += 1 end
+-- Same rule as the panel: a climate entity's own switches/lights aren't separate devices.
+local function isClimateCompanion(id, prefixes)
+  if not (id:match("^switch%.") or id:match("^light%.")) then return false end
+  local objectId = id:match("^[^.]+%.(.+)$") or ""
+  for _, prefix in ipairs(prefixes) do
+    if string.sub(objectId, 1, #prefix) == prefix then return true end
   end
+  return false
+end
+
+local function activeCount()
+  local count, counted = 0, {}
+  for _, area in ipairs(home.areas or {}) do
+    local prefixes = {}
+    for _, id in ipairs(area.entities or {}) do
+      local objectId = id:match("^climate%.(.+)$")
+      if objectId then table.insert(prefixes, objectId .. "_") end
+    end
+    for _, id in ipairs(area.entities or {}) do
+      if not counted[id] and not isClimateCompanion(id, prefixes) and isActive(home.entities[id]) then
+        counted[id] = true
+        count += 1
+      end
+    end
+  end
+  return count
+end
+
+local function render()
+  local count = activeCount()
 
   local connected = status == "connected"
   local children = {
