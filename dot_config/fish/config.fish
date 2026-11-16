@@ -10,6 +10,9 @@ set -gx LC_MONETARY pt_BR.UTF-8
 # Docker rootless (docker-rootless package)
 set -gx DOCKER_HOST unix://$XDG_RUNTIME_DIR/docker.sock
 
+# HashiCorp Vault — public mesh address (see infra's docs/agents/vault.md)
+set -gx VAULT_ADDR https://vault.adryan.me
+
 # overwrite greeting
 # potentially disabling fastfetch
 #function fish_greeting

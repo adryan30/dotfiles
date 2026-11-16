@@ -14,6 +14,10 @@ x-scheme-handler/hydralauncher=hydralauncher.desktop
 x-scheme-handler/discord=vesktop.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 x-scheme-handler/claude=com.anthropic.Claude.desktop
+x-scheme-handler/freelens=freelens.desktop
+x-scheme-handler/stremio=stremio-enhanced.desktop
+application/x-bat=net.lutris.Lutris1.desktop
+application/x-ms-dos-executable=umu-exe.desktop
 
 [Added Associations]
 x-scheme-handler/http=zen.desktop;
@@ -26,3 +30,5 @@ application/x-extension-shtml=zen.desktop;
 application/xhtml+xml=zen.desktop;
 application/x-extension-xhtml=zen.desktop;
 application/x-extension-xht=zen.desktop;
+application/x-bat=net.lutris.Lutris.desktop;net.lutris.Lutris1.desktop;
+application/x-ms-dos-executable=umu-exe.desktop;

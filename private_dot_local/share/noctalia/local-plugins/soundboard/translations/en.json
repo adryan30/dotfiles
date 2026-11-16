@@ -1,0 +1,21 @@
+{
+  "no-clips": "No clips found",
+  "no-match": "No clips match \"{filter}\"",
+  "empty-dir": "Drop audio into {dir}",
+  "playing-title": "Soundboard",
+  "playing-body": "Playing {name}",
+  "settings": {
+    "clips_dir": {
+      "label": "Clips folder",
+      "description": "Directory of audio files to list under /sb"
+    },
+    "volume": {
+      "label": "Playback volume",
+      "description": "Fallback volume for pw-play (0.0–1.5) when ~/.config/soundboard/gui.json is absent"
+    },
+    "also_headset": {
+      "label": "Also play on headset",
+      "description": "Mirror clips to the default sink as well as the soundboard sink. Overridden by gui.json monitor when that file exists."
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "title": "Home",
+  "settings": {
+    "ha_url": {
+      "label": "Home Assistant URL",
+      "description": "Base URL, e.g. http://ha.local"
+    },
+    "ha_token": {
+      "label": "Access token",
+      "description": "Home Assistant long-lived access token"
+    },
+    "priority_area": {
+      "label": "Priority room",
+      "description": "Shown first and expanded: the room whose name contains this, plus any device whose entity ID contains it"
+    },
+    "climate_panel": {
+      "label": "Climate detail panel",
+      "description": "Panel opened by the tune button on climate devices"
+    },
+    "show_count": { "label": "Show how many devices are on" }
+  },
+  "status": {
+    "unconfigured": "Not configured",
+    "connecting": "Connecting…",
+    "auth_failed": "Token rejected",
+    "unreachable": "Home Assistant unreachable",
+    "connected": "Connected"
+  },
+  "panel": {
+    "empty": "No devices assigned to rooms",
+    "unavailable": "Unavailable",
+    "on": "On",
+    "off": "Off",
+    "active_count": "{count} on",
+    "brightness": "{percent}%",
+    "target": "→ {temp}°"
+  },
+  "media": {
+    "playing": "Playing",
+    "paused": "Paused",
+    "idle": "Idle",
+    "standby": "Standby"
+  },
+  "widget": {
+    "tooltip": "{count} on",
+    "tooltip_room": "{count} on · {room} {temp}°",
+    "tooltip_status": "Home: {status}"
+  },
+  "notifications": {
+    "command_failed": "Home Assistant command failed ({status})",
+    "auth_failed": "Home Assistant rejected the access token"
+  }
+}

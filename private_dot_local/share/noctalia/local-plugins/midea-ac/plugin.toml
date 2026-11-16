@@ -1,0 +1,84 @@
+# Midea AC control through Home Assistant (midea_ac integration on jackdaw).
+# The service keeps one /api/stream connection and publishes the AC's state;
+# the widget and panel only read that state and send commands back through it.
+
+id = "potato/midea-ac"
+name = "Midea AC"
+version = "1.0.0"
+plugin_api = 10
+author = "potato"
+license = "MIT"
+tags = ["bar", "panel", "service", "network"]
+icon = "air-conditioning"
+description = "Control the Midea air conditioner through Home Assistant: power, temperature, mode, turbo and other presets, fan, swing."
+
+[[setting]]
+key = "ha_url"
+type = "string"
+label_key = "settings.ha_url.label"
+description_key = "settings.ha_url.description"
+default = "http://ha.local"
+
+[[setting]]
+key = "ha_token"
+type = "string"
+label_key = "settings.ha_token.label"
+description_key = "settings.ha_token.description"
+default = ""
+
+[[setting]]
+key = "climate_entity"
+type = "string"
+label_key = "settings.climate_entity.label"
+default = "climate.adryan_ac"
+
+[[setting]]
+key = "power_entity"
+type = "string"
+label_key = "settings.power_entity.label"
+default = "sensor.adryan_ac_power"
+advanced = true
+
+[[setting]]
+key = "outdoor_entity"
+type = "string"
+label_key = "settings.outdoor_entity.label"
+default = "sensor.adryan_ac_outdoor_temperature"
+advanced = true
+
+[[setting]]
+key = "display_entity"
+type = "string"
+label_key = "settings.display_entity.label"
+default = "switch.adryan_ac_display"
+advanced = true
+
+[[setting]]
+key = "purifier_entity"
+type = "string"
+label_key = "settings.purifier_entity.label"
+default = "switch.adryan_ac_purifier"
+advanced = true
+
+[[widget]]
+id = "ac"
+entry = "widget.luau"
+
+  [[widget.setting]]
+  key = "show_temperature"
+  type = "bool"
+  label_key = "settings.show_temperature.label"
+  default = true
+
+[[service]]
+id = "connection"
+entry = "service.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 470
+height = 560
+placement = "attached"
+position = "auto"
+open_near_click = true

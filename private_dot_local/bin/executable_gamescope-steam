@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Super+Shift+G. Asks the Niri session wrapper to replace Niri with the
+# real gamescope session (gamescope-session-cachyos). The wrapper stays the
+# greetd session, so this does not go through the greeter.
+set -euo pipefail
+
+notify() {
+  command -v notify-send >/dev/null 2>&1 || return 0
+  notify-send "Gaming mode" "$1" || true
+}
+
+wrap_marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/niri-gamescope-wrap"
+if [[ ! -f "$wrap_marker" ]]; then
+  notify "Log out of Niri and log back in once. After that, this shortcut opens Steam with no password."
+  exit 1
+fi
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/niri-gamescope-session"
+mkdir -p "$state_dir"
+
+if pgrep -u "$(id -u)" -x steam >/dev/null 2>&1; then
+  steam -shutdown || true
+  for _ in $(seq 1 40); do
+    pgrep -u "$(id -u)" -x steam >/dev/null 2>&1 || break
+    sleep 0.25
+  done
+fi
+
+printf '%s\n' gamescope >"$state_dir/next"
+exec niri msg action quit --skip-confirmation

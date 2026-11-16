@@ -19,6 +19,7 @@
 .config/alacritty
 .config/niri
 .config/noctalia
+.local/share/noctalia
 .config/dotfiles
 .config/environment.d
 .config/mimeapps.list

@@ -8,7 +8,7 @@
             "compressor#0"
         ],
         "rnnoise#0": {
-            "bypass": false,
+            "bypass": true,
             "enable-vad": true,
             "input-gain": 0.0,
             "model-name": "",

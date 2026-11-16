@@ -1,9 +1,23 @@
 // ────────────── Output Configuration ──────────────
 // You can run `niri msg outputs` to get the correct name for your displays.
-// You will have to remove "/-" and edit it before it takes effect.
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Outputs
 
-/- output "DP-1" {
-    mode "2560x1440@359.979" // Set resolution and refresh rate
-    scale 1 // No scaling (use 2 for HiDPI)
+// Ultrawide is primary, anchored top-left.
+output "DP-1" {
+    position x=0 y=0
+}
+
+// Beyond TV stays dark in the niri session. Gamescope still drives this
+// connector on its own (systemd user drop-in hdmi-tv.conf). Remove `off`
+// to bring the previous layout back: ultrawide bottom-left, TV top-right
+// (bottom-left of the TV meets the ultrawide's top-right).
+output "HDMI-A-1" {
+    off
+
+    // EDID preferred mode is 4K60. 4K120 is the highest rate this port
+    // advertises (55C6K, HDMI 2.1). VRR on-demand still only engages for
+    // gamescope (see rules.kdl), and it cannot go above this mode.
+    mode "3840x2160@120.000"
+    position x=3440 y=-2160
+    variable-refresh-rate on-demand=true
 }

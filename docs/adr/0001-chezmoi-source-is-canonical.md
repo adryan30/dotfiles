@@ -6,4 +6,5 @@ Home configs that chezmoi tracks are owned by the source directory (`~/Developer
 
 - In-place edits under `$HOME` for a managed file drift until the next apply overwrites them (or linger as a false sense of permanence if never re-added).
 - New managed files enter via `chezmoi add` (or create under source + apply), not as orphans only under `$HOME`.
+- Agents author new home configs in the source and apply them; they never create or edit live targets with editor tools, even before the file is managed. Cursor keeps agent edits as pending inline diffs and rewrites those files on every startup, which re-triggers hot reload in watchers like Noctalia (seen with the `midea-ac` plugin). Writes from `chezmoi apply` aren't tracked, so they don't replay.
 - Secrets stay out of the cleartext tree (`private_`, age, omit from add).

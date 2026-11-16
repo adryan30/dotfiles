@@ -72,3 +72,10 @@
           // blur false
         }
     }
+
+    // Nested gamescope session (verified app-id via `niri msg windows`) —
+    // turns on the TV's on-demand VRR (display.kdl) only while it's up.
+    window-rule {
+        match app-id="^gamescope$"
+        variable-refresh-rate true
+    }
