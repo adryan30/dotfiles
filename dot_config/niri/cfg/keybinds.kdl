@@ -171,13 +171,15 @@ binds {
     // Shift+Print: niri's built-in interactive Screenshot UI (pick a
     // window/output/region on screen; copies to clipboard, saves to disk
     // per `screenshot-path` in misc.kdl — currently null, so clipboard-only).
-    // Ctrl+Shift+1/2/3/4 kept as aliases.
+    // Ctrl+Shift+1/3/4 kept as screenshot aliases. Ctrl+Shift+2 is T3 Code
+    // SnapShots (captures the focused window into the current draft); Print /
+    // Ctrl+Print still cover region and full-screen captures.
     Print                               hotkey-overlay-title="Screenshot Region: grim+slurp+swappy" { spawn-sh "grim -g \"$(slurp)\" - | swappy -f -"; }
     Ctrl+Print                          hotkey-overlay-title="Screenshot Screen: niri" { screenshot-screen; }
     Alt+Print                           hotkey-overlay-title="Screenshot Window: niri" { screenshot-window; }
     Shift+Print                         hotkey-overlay-title="Screenshot UI: niri" { screenshot; }
     CTRL+Shift+1                        hotkey-overlay-title="Screenshot Region: grim+slurp+swappy" { spawn-sh "grim -g \"$(slurp)\" - | swappy -f -"; }
-    CTRL+Shift+2                        hotkey-overlay-title="Screenshot Screen: niri" { screenshot-screen; }
+    Ctrl+Shift+2 repeat=false           hotkey-overlay-title="T3 Code SnapShot" { spawn "gdbus" "call" "--session" "--dest" "com.t3tools.T3Code.SnapShot" "--object-path" "/com/t3tools/SnapShot" "--method" "com.t3tools.SnapShot.Capture"; }
     CTRL+Shift+3                        hotkey-overlay-title="Screenshot Window: niri" { screenshot-window; }
     CTRL+Shift+4                        hotkey-overlay-title="Screenshot UI: niri" { screenshot; }
 
